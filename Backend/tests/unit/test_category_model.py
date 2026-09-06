@@ -29,6 +29,9 @@ def test_category_name_is_required(db_session, existing_user):
     category = Category(user_id=existing_user.id, name=None)
     db_session.add(category)
 
+    """THIS LINE IS EXPECTED TO RAISE AN INTEGRITY ERROR AND TEST IS PASSED 
+    BECAUSE THE NAME FIELD IS REQUIRED 
+    AND IF IT DOESTNOT THROW AN ERROR THEN THE TEST SHOULD FAIL"""
     with pytest.raises(IntegrityError):
         db_session.commit()
 

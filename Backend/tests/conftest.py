@@ -5,6 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from app.models.base import Base
 from app.models.user import User  # noqa: F401 — must import so Base "knows" about this table
 from app.models.category import Category  # noqa: F401 — must import so Base "knows" about this table
+from app.models.task import Task
+
 
 @pytest.fixture()
 def db_session():
