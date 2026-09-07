@@ -72,3 +72,8 @@ def test_decode_rejects_token_signed_with_wrong_key():
 
     result = service.decode_access_token(token_signed_by_someone_else)
     assert result is None
+
+
+# commmand to run this test file:
+# pytest tests/unit/test_security.py -v
+# Run this test file from backend directory
