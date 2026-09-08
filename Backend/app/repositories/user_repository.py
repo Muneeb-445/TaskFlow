@@ -27,3 +27,30 @@ class UserRepository:
         self._db.commit()
         self._db.refresh(user)
         return user
+
+
+    def update_profile(
+        self,
+        user: User,
+        *, 
+        fullname: str | None = None,
+        bio: str | None = None,
+        avatar_url: str | None = None,
+    ) -> User:
+        
+        if fullname is not None:
+            user.fullname = fullname
+        if bio is not None:
+            user.bio = bio
+        if avatar_url is not None:
+            user.avatar_url = avatar_url
+
+        self._db.commit()
+        self._db.refresh(user)
+        return user
+
+    def update_password(self, user: User, *, new_password_hash: str) -> User:
+        user.password_hash = new_password_hash
+        self._db.commit()
+        self._db.refresh(user)
+        return user
