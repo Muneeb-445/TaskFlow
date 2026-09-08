@@ -34,3 +34,14 @@ class UserLogin(BaseModel):
     @classmethod
     def normalize_email(cls, value: str) -> str:
         return value.lower()
+    
+
+class UserUpdate(BaseModel):
+    fullname: str | None = Field(default=None, min_length=1, max_length=255)
+    bio: str | None = None
+    avatar_url: str | None = Field(default=None, max_length=255)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=128)
