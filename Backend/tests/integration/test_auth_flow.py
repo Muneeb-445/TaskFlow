@@ -93,3 +93,7 @@ def test_login_rejects_nonexistent_email():
     )
 
     assert response.status_code == 401
+
+
+# command to run this test file:
+# pytest tests/integration/test_auth_flow.py -v
