@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.v1.routers import auth
+from app.api.v1.routers import auth, users
 from app.core.config import settings
 from app.core.exceptions import ConflictError, ForbiddenError, InvalidCredentialsError, NotFoundError
 
@@ -39,6 +39,7 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)})
 
     app.include_router(auth.router, prefix=settings.api_v1_prefix)
+    app.include_router(users.router, prefix=settings.api_v1_prefix)
 
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:
