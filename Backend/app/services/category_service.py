@@ -6,6 +6,23 @@ from app.repositories.category_repository import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
 
 
+def compute_category_stats(task_count: int | None, completed_count: int | None) -> dict[str, int]:
+    """Derive task_count/completed_count/remaining_count/progress_percentage
+    from raw aggregate query results. Shared by CategoryService and
+    DashboardService so this math is defined exactly once."""
+    task_count = task_count or 0
+    completed_count = completed_count or 0
+    remaining_count = task_count - completed_count
+    progress_percentage = round((completed_count / task_count) * 100) if task_count > 0 else 0
+
+    return {
+        "task_count": task_count,
+        "completed_count": completed_count,
+        "remaining_count": remaining_count,
+        "progress_percentage": progress_percentage,
+    }
+
+
 class CategoryService:
     """Business logic for managing a user's own categories."""
 
@@ -13,20 +30,13 @@ class CategoryService:
         self._repository = CategoryRepository(db)
 
     def _to_response(self, category: Category, task_count: int, completed_count: int) -> CategoryResponse:
-        task_count = task_count or 0
-        completed_count = completed_count or 0
-        remaining_count = task_count - completed_count
-        progress_percentage = round((completed_count / task_count) * 100) if task_count > 0 else 0
-
+        stats = compute_category_stats(task_count, completed_count)
         return CategoryResponse(
             id=category.id,
             name=category.name,
             created_at=category.created_at,
             updated_at=category.updated_at,
-            task_count=task_count,
-            completed_count=completed_count,
-            remaining_count=remaining_count,
-            progress_percentage=progress_percentage,
+            **stats,
         )
 
     def get_all_categories(self, user_id: int) -> list[CategoryResponse]:
@@ -60,8 +70,6 @@ class CategoryService:
 
         self._repository.update(category, name=data.name)
 
-        # Re-fetch with stats, since this category may already own tasks
-        # (renaming doesn't touch task_count/completed_count at all).
         row = self._repository.get_one_with_stats(category_id, user_id)
         category, task_count, completed_count = row
         return self._to_response(category, task_count, completed_count)

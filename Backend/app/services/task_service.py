@@ -9,6 +9,31 @@ from app.repositories.task_repository import TaskRepository
 from app.schemas.task import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
 
 
+def build_task_response(task: Task, category_name: str | None) -> TaskResponse:
+    """Convert a Task ORM object into a TaskResponse, including the
+    computed is_overdue field. Shared by TaskService and DashboardService
+    so overdue logic is defined exactly once."""
+    is_overdue = (
+        task.due_date is not None
+        and task.due_date < datetime.now(timezone.utc)
+        and task.status != TaskStatus.COMPLETED
+    )
+
+    return TaskResponse(
+        id=task.id,
+        title=task.title,
+        description=task.description,
+        status=task.status,
+        priority=task.priority,
+        due_date=task.due_date,
+        created_at=task.created_at,
+        completed_at=task.completed_at,
+        category_id=task.category_id,
+        category_name=category_name,
+        is_overdue=is_overdue,
+    )
+
+
 class TaskService:
     """Business logic for a user's own tasks."""
 
@@ -36,27 +61,6 @@ class TaskService:
 
     def _category_name(self, task: Task) -> str | None:
         return task.category.name if task.category else None
-
-    def _to_response(self, task: Task, category_name: str | None) -> TaskResponse:
-        is_overdue = (
-            task.due_date is not None
-            and task.due_date < datetime.now(timezone.utc)
-            and task.status != TaskStatus.COMPLETED
-        )
-
-        return TaskResponse(
-            id=task.id,
-            title=task.title,
-            description=task.description,
-            status=task.status,
-            priority=task.priority,
-            due_date=task.due_date,
-            created_at=task.created_at,
-            completed_at=task.completed_at,
-            category_id=task.category_id,
-            category_name=category_name,
-            is_overdue=is_overdue,
-        )
 
     def get_tasks(
         self,
@@ -87,7 +91,7 @@ class TaskService:
         counts = self._repository.get_status_counts(user_id)
 
         return TaskListResponse(
-            items=[self._to_response(task, name) for task, name in rows],
+            items=[build_task_response(task, name) for task, name in rows],
             total=total,
             page=page,
             page_size=page_size,
@@ -99,7 +103,7 @@ class TaskService:
 
     def get_task(self, task_id: int, user_id: int) -> TaskResponse:
         task = self._get_owned_task(task_id, user_id)
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
 
     def create_task(self, user_id: int, data: TaskCreate) -> TaskResponse:
         self._validate_category_ownership(data.category_id, user_id)
@@ -112,7 +116,7 @@ class TaskService:
             priority=data.priority,
             due_date=self._to_end_of_day(data.due_date),
         )
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
 
     def update_task(self, task_id: int, user_id: int, data: TaskUpdate) -> TaskResponse:
         task = self._get_owned_task(task_id, user_id)
@@ -126,7 +130,7 @@ class TaskService:
             provided_fields["due_date"] = self._to_end_of_day(provided_fields["due_date"])
 
         task = self._repository.update(task, **provided_fields)
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
 
     def delete_task(self, task_id: int, user_id: int) -> None:
         task = self._get_owned_task(task_id, user_id)
@@ -137,7 +141,7 @@ class TaskService:
         if task.status == TaskStatus.TODO:
             task.status = TaskStatus.IN_PROGRESS
             task = self._repository.save(task)
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
 
     def complete_task(self, task_id: int, user_id: int) -> TaskResponse:
         task = self._get_owned_task(task_id, user_id)
@@ -145,7 +149,7 @@ class TaskService:
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.now(timezone.utc)
             task = self._repository.save(task)
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
 
     def reopen_task(self, task_id: int, user_id: int) -> TaskResponse:
         task = self._get_owned_task(task_id, user_id)
@@ -153,4 +157,4 @@ class TaskService:
             task.status = TaskStatus.TODO
             task.completed_at = None
             task = self._repository.save(task)
-        return self._to_response(task, self._category_name(task))
+        return build_task_response(task, self._category_name(task))
