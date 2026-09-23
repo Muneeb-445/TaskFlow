@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { createPortal } from 'react-dom'
 import {
   Plus,
   Search,
@@ -727,11 +728,14 @@ function EmptyTasks({ onCreateTask, hasFilter }) {
    ========================= */
 
 function DeleteModal({ onConfirm, onClose }) {
-  return (
+  return createPortal(
     <div className="my-tasks-modal">
-      <div className="my-tasks-modal-overlay" onClick={onClose} />
+      <div
+        className="my-tasks-modal-overlay"
+        onClick={onClose}
+      />
 
-      <div className="my-tasks-delete-modal slide-up">
+      <div className="my-tasks-delete-modal">
         <div className="my-tasks-delete-icon">
           <Trash2 size={22} />
         </div>
@@ -758,6 +762,7 @@ function DeleteModal({ onConfirm, onClose }) {
           </button>
         </div>
       </div>
-    </div>
-  );
+    </div>,
+    document.body
+  )
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   Plus,
   Edit2,
@@ -29,7 +30,7 @@ function CategoryModal({ initial, onSave, onClose }) {
   const [color, setColor] = useState(initial?.color ?? COLORS[0])
   const [err, setErr] = useState('')
 
-  return (
+  return createPortal(
     <div className="category-modal-overlay">
       <div
         className="category-modal-backdrop"
@@ -106,7 +107,6 @@ function CategoryModal({ initial, onSave, onClose }) {
             </div>
           </div>
 
-          {/* Preview */}
           <div className="category-preview">
             <span
               className="category-preview-dot"
@@ -147,7 +147,8 @@ function CategoryModal({ initial, onSave, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -157,7 +158,7 @@ function DeleteConfirm({
   onConfirm,
   onClose,
 }) {
-  return (
+  return createPortal(
     <div className="category-modal-overlay">
       <div
         className="category-modal-backdrop"
@@ -199,10 +200,10 @@ function DeleteConfirm({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
-
 export default function Categories({
   categories,
   tasks,

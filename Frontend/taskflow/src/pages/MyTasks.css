@@ -725,31 +725,41 @@
 .my-tasks-modal {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 9999;
+
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+
   padding: 16px;
 }
 
 .my-tasks-modal-overlay {
   position: absolute;
   inset: 0;
+
   background: rgba(0, 0, 0, 0.3);
+
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 
 .my-tasks-delete-modal {
   position: relative;
+  z-index: 1;
+
   width: 100%;
+  max-width: 420px;
+
   padding: 24px;
+
   border: 1px solid #ececef;
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
+
   background: #ffffff;
+
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
-
 .my-tasks-delete-icon {
   width: 48px;
   height: 48px;
