@@ -1,0 +1,61 @@
+/* =========================================
+   TaskFlow - Error State
+   ========================================= */
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.error-state-illustration {
+  margin-bottom: 24px;
+}
+
+.error-state-title {
+  margin: 0 0 8px;
+  color: #0f0f14;
+  font-size: 20px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.error-state-message {
+  max-width: 320px;
+  margin: 0 0 24px;
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.625;
+}
+
+.error-state-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--color-brand);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.error-state-button:hover {
+  background-color: var(--color-brand-hover);
+}
+
+.error-state-button:active {
+  transform: scale(0.98);
+}
+
+.error-state-button:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}

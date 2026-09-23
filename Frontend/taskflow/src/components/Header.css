@@ -1,0 +1,298 @@
+/* =========================================
+   TaskFlow - Header
+   ========================================= */
+
+.header {
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 60px;
+  padding: 0 24px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ececef;
+  flex-shrink: 0;
+}
+
+/* ---------- Search ---------- */
+
+.header-search {
+  position: relative;
+  width: 100%;
+  max-width: 384px;
+  flex: 1;
+}
+
+.header-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  z-index: 1;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.header-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background-color: #f5f5f7;
+  color: #0f0f14;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.header-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.header-search-input:focus {
+  border-color: var(--color-brand);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+/* ---------- Actions ---------- */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.header-menu-wrapper {
+  position: relative;
+}
+
+/* ---------- Create Button ---------- */
+
+.header-create-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--color-brand);
+  color: #ffffff;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.header-create-button:hover {
+  background-color: var(--color-brand-hover);
+}
+
+.header-create-button:active {
+  transform: scale(0.95);
+}
+
+/* ---------- Notification Button ---------- */
+
+.header-icon-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #6b7280;
+  transition: background-color 0.2s ease;
+}
+
+.header-icon-button:hover {
+  background-color: #f9fafb;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background-color: var(--color-brand);
+}
+
+/* ---------- Avatar Button ---------- */
+
+.avatar-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.avatar-button:hover {
+  background-color: #f9fafb;
+}
+
+.avatar-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #8b5cf6,
+    #6d28d9
+  );
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.avatar-name {
+  display: block;
+  max-width: 100px;
+  overflow: hidden;
+  color: #0f0f14;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar-chevron {
+  color: #9ca3af;
+}
+
+/* ---------- Avatar Dropdown ---------- */
+
+.avatar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.avatar-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 50;
+  width: 208px;
+  margin-top: 8px;
+  padding: 4px 0;
+  overflow: hidden;
+  border: 1px solid #ececef;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-user-info {
+  padding: 10px 12px;
+  border-bottom: 1px solid #ececef;
+}
+
+.avatar-user-name {
+  margin: 0;
+  overflow: hidden;
+  color: #0f0f14;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar-user-email {
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: #9ca3af;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Dropdown Items ---------- */
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-size: 14px;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f9fafb;
+}
+
+.dropdown-item svg {
+  flex-shrink: 0;
+}
+
+.dropdown-divider {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid #ececef;
+}
+
+.dropdown-item-danger {
+  color: #ef4444;
+}
+
+.dropdown-item-danger:hover {
+  background-color: #fef2f2;
+}
+
+/* =========================================
+   Responsive
+   ========================================= */
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 16px;
+  }
+
+  .header-create-button {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .avatar-name {
+    display: none;
+  }
+
+  .header {
+    gap: 8px;
+  }
+
+  .header-search {
+    max-width: none;
+  }
+}

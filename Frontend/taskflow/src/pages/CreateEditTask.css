@@ -1,0 +1,261 @@
+.create-edit-task-page {
+  width: 100%;
+  max-width: 576px;
+  margin: 0 auto;
+  padding: 24px;
+  padding-bottom: 24px;
+}
+
+.create-edit-back-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.create-edit-back-button:hover {
+  color: #0f0f14;
+}
+
+.create-edit-header {
+  margin-bottom: 24px;
+}
+
+.create-edit-title {
+  margin: 0;
+  color: #0f0f14;
+  font-size: 24px;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.create-edit-subtitle {
+  margin: 2px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* Form */
+
+.create-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  border: 1px solid #ececef;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.task-field {
+  width: 100%;
+}
+
+.task-field-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.task-field-error {
+  margin: 4px 0 0;
+  color: #ef4444;
+  font-size: 12px;
+}
+
+/* Inputs */
+
+.task-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ececef;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #0f0f14;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.task-input::placeholder {
+  color: #9ca3af;
+}
+
+.task-input:focus {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.task-input-error {
+  border-color: #fca5a5;
+  background-color: rgba(254, 242, 242, 0.4);
+}
+
+.task-input-error:focus {
+  border-color: #f87171;
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+}
+
+.task-description-input {
+  resize: none;
+}
+
+.task-select {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Category + Status */
+
+.task-two-column-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Priority */
+
+.priority-options {
+  display: flex;
+  gap: 8px;
+}
+
+.priority-option {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ececef;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.priority-option:hover:not(
+    .priority-option-active
+  ) {
+  border-color: #d1d5db;
+}
+
+.priority-option:active {
+  transform: scale(0.98);
+}
+
+.priority-option-active {
+  color: #ffffff;
+}
+
+/* Actions */
+
+.create-edit-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.create-edit-submit {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--color-brand);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+.create-edit-submit:hover:not(:disabled) {
+  background-color: var(--color-brand-hover);
+}
+
+.create-edit-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.create-edit-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.create-edit-cancel {
+  padding: 12px 16px;
+  border: 1px solid #ececef;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.create-edit-cancel:hover {
+  background-color: #f9fafb;
+}
+
+/* Focus */
+
+.create-edit-back-button:focus-visible,
+.priority-option:focus-visible,
+.create-edit-submit:focus-visible,
+.create-edit-cancel:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* Responsive */
+
+@media (max-width: 767px) {
+  .create-edit-task-page {
+    padding: 16px;
+    padding-bottom: 96px;
+  }
+
+  .create-edit-title {
+    font-size: 22px;
+  }
+
+  .create-edit-form {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .task-two-column-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-edit-actions {
+    flex-direction: column;
+  }
+
+  .create-edit-cancel {
+    width: 100%;
+  }
+}
