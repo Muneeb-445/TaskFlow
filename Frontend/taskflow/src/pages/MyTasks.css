@@ -71,7 +71,7 @@
   flex: 1;
 }
 
-.my-tasks-search svg {
+.my-tasks-search > svg {
   position: absolute;
   top: 50%;
   left: 12px;
@@ -887,4 +887,40 @@
     max-width: 384px;
     border-radius: 16px;
   }
+}
+.my-tasks-search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+
+  color: #9ca3af;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.my-tasks-search-clear svg {
+  position: static;
+  width: 13px;
+  height: 13px;
+  color: inherit;
+  transform: none;
+}
+
+.my-tasks-search-clear:hover {
+  background: #f3f4f6;
+  color: #4b5563;
 }

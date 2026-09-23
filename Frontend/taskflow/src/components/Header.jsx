@@ -1,18 +1,19 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Bell,
   Search,
   ChevronDown,
   User,
+  X,
   Settings,
   LogOut,
   Plus,
-} from 'lucide-react'
+} from "lucide-react";
 
-import NotificationPanel from './NotificationPanel'
-import './Header.css'
+import NotificationPanel from "./NotificationPanel";
+import "./Header.css";
 
-const NOTIF_COUNT = 2
+const NOTIF_COUNT = 2;
 
 export default function Header({
   user,
@@ -22,34 +23,31 @@ export default function Header({
   searchQuery,
   onSearch,
 }) {
-  const [avatarOpen, setAvatarOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
+  const [avatarOpen, setAvatarOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   const initials = user.name
-    .split(' ')
+    .split(" ")
     .map((name) => name[0])
-    .join('')
+    .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
   const handleNotificationToggle = () => {
-    setNotifOpen((open) => !open)
-    setAvatarOpen(false)
-  }
+    setNotifOpen((open) => !open);
+    setAvatarOpen(false);
+  };
 
   const handleAvatarToggle = () => {
-    setAvatarOpen((open) => !open)
-    setNotifOpen(false)
-  }
+    setAvatarOpen((open) => !open);
+    setNotifOpen(false);
+  };
 
   return (
     <header className="header">
       {/* Search */}
       <div className="header-search">
-        <Search
-          size={15}
-          className="header-search-icon"
-        />
+        <Search size={15} className="header-search-icon" />
 
         <input
           type="text"
@@ -58,6 +56,17 @@ export default function Header({
           placeholder="Search tasks…"
           className="header-search-input"
         />
+
+        {searchQuery && (
+          <button
+            type="button"
+            className="header-search-clear"
+            onClick={() => onSearch("")}
+            aria-label="Clear search"
+          >
+            <X size={13} />
+          </button>
+        )}
       </div>
 
       <div className="header-actions">
@@ -81,15 +90,11 @@ export default function Header({
           >
             <Bell size={18} />
 
-            {NOTIF_COUNT > 0 && (
-              <span className="notification-dot" />
-            )}
+            {NOTIF_COUNT > 0 && <span className="notification-dot" />}
           </button>
 
           {notifOpen && (
-            <NotificationPanel
-              onClose={() => setNotifOpen(false)}
-            />
+            <NotificationPanel onClose={() => setNotifOpen(false)} />
           )}
         </div>
 
@@ -100,18 +105,11 @@ export default function Header({
             onClick={handleAvatarToggle}
             className="avatar-button"
           >
-            <div className="avatar-circle">
-              {initials}
-            </div>
+            <div className="avatar-circle">{initials}</div>
 
-            <span className="avatar-name">
-              {user.name.split(' ')[0]}
-            </span>
+            <span className="avatar-name">{user.name.split(" ")[0]}</span>
 
-            <ChevronDown
-              size={14}
-              className="avatar-chevron"
-            />
+            <ChevronDown size={14} className="avatar-chevron" />
           </button>
 
           {avatarOpen && (
@@ -123,20 +121,16 @@ export default function Header({
 
               <div className="avatar-dropdown fade-in">
                 <div className="avatar-user-info">
-                  <p className="avatar-user-name">
-                    {user.name}
-                  </p>
+                  <p className="avatar-user-name">{user.name}</p>
 
-                  <p className="avatar-user-email">
-                    {user.email}
-                  </p>
+                  <p className="avatar-user-email">{user.email}</p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => {
-                    onNav('profile')
-                    setAvatarOpen(false)
+                    onNav("profile");
+                    setAvatarOpen(false);
                   }}
                   className="dropdown-item"
                 >
@@ -147,8 +141,8 @@ export default function Header({
                 <button
                   type="button"
                   onClick={() => {
-                    onNav('settings')
-                    setAvatarOpen(false)
+                    onNav("settings");
+                    setAvatarOpen(false);
                   }}
                   className="dropdown-item"
                 >
@@ -160,8 +154,8 @@ export default function Header({
                   <button
                     type="button"
                     onClick={() => {
-                      onLogout()
-                      setAvatarOpen(false)
+                      onLogout();
+                      setAvatarOpen(false);
                     }}
                     className="dropdown-item dropdown-item-danger"
                   >
@@ -175,5 +169,5 @@ export default function Header({
         </div>
       </div>
     </header>
-  )
+  );
 }

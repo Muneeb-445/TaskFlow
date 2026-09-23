@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState } from "react";
 import {
   Plus,
   Search,
   SlidersHorizontal,
+  X,
   CheckCircle2,
   Circle,
   ChevronDown,
@@ -11,25 +12,25 @@ import {
   Eye,
   Calendar,
   AlertCircle,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { PriorityBadge, StatusBadge, CategoryChip } from '../components/badges'
+import { PriorityBadge, StatusBadge, CategoryChip } from "../components/badges";
 
-import './MyTasks.css'
+import "./MyTasks.css";
 
 const statusFilters = [
-  { key: 'all', label: 'All' },
-  { key: 'todo', label: 'Pending' },
-  { key: 'in_progress', label: 'In Progress' },
-  { key: 'completed', label: 'Completed' },
-  { key: 'overdue', label: 'Overdue' },
-]
+  { key: "all", label: "All" },
+  { key: "todo", label: "Pending" },
+  { key: "in_progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "overdue", label: "Overdue" },
+];
 
 const priorityOrder = {
   high: 0,
   medium: 1,
   low: 2,
-}
+};
 
 export default function MyTasks({
   tasks,
@@ -42,61 +43,61 @@ export default function MyTasks({
   searchQuery,
   onSearch,
 }) {
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [priorityFilter, setPriorityFilter] = useState('all')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [sortField, setSortField] = useState('dueDate')
-  const [showFilters, setShowFilters] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sortField, setSortField] = useState("dueDate");
+  const [showFilters, setShowFilters] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const getCat = (id) =>
     categories.find((category) => category.id === id) || {
-      name: 'Uncategorized',
-      color: '#9CA3AF',
-    }
+      name: "Uncategorized",
+      color: "#9CA3AF",
+    };
 
   const filtered = useMemo(() => {
-    let list = [...tasks]
+    let list = [...tasks];
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
 
       list = list.filter(
         (task) =>
           task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query)
-      )
+          task.description.toLowerCase().includes(query),
+      );
     }
 
-    if (statusFilter !== 'all') {
-      list = list.filter((task) => task.status === statusFilter)
+    if (statusFilter !== "all") {
+      list = list.filter((task) => task.status === statusFilter);
     }
 
-    if (priorityFilter !== 'all') {
-      list = list.filter((task) => task.priority === priorityFilter)
+    if (priorityFilter !== "all") {
+      list = list.filter((task) => task.priority === priorityFilter);
     }
 
-    if (categoryFilter !== 'all') {
-      list = list.filter((task) => task.categoryId === categoryFilter)
+    if (categoryFilter !== "all") {
+      list = list.filter((task) => task.categoryId === categoryFilter);
     }
 
     list.sort((a, b) => {
-      if (sortField === 'dueDate') {
-        return a.dueDate.localeCompare(b.dueDate)
+      if (sortField === "dueDate") {
+        return a.dueDate.localeCompare(b.dueDate);
       }
 
-      if (sortField === 'priority') {
-        return priorityOrder[a.priority] - priorityOrder[b.priority]
+      if (sortField === "priority") {
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
       }
 
-      if (sortField === 'title') {
-        return a.title.localeCompare(b.title)
+      if (sortField === "title") {
+        return a.title.localeCompare(b.title);
       }
 
-      return b.createdAt.localeCompare(a.createdAt)
-    })
+      return b.createdAt.localeCompare(a.createdAt);
+    });
 
-    return list
+    return list;
   }, [
     tasks,
     searchQuery,
@@ -104,11 +105,10 @@ export default function MyTasks({
     priorityFilter,
     categoryFilter,
     sortField,
-  ])
+  ]);
 
   const activeFilterCount =
-    (priorityFilter !== 'all' ? 1 : 0) +
-    (categoryFilter !== 'all' ? 1 : 0)
+    (priorityFilter !== "all" ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0);
 
   return (
     <div className="my-tasks-page fade-in">
@@ -140,24 +140,30 @@ export default function MyTasks({
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search tasks…"
           />
+
+          {searchQuery && (
+            <button
+              type="button"
+              className="my-tasks-search-clear"
+              onClick={() => onSearch("")}
+              aria-label="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <button
           type="button"
           onClick={() => setShowFilters((current) => !current)}
           className={`my-tasks-filter-button ${
-            showFilters || activeFilterCount > 0
-              ? 'my-tasks-filter-active'
-              : ''
+            showFilters || activeFilterCount > 0 ? "my-tasks-filter-active" : ""
           }`}
         >
           <SlidersHorizontal size={15} />
           Filters
-
           {activeFilterCount > 0 && (
-            <span className="my-tasks-filter-count">
-              {activeFilterCount}
-            </span>
+            <span className="my-tasks-filter-count">{activeFilterCount}</span>
           )}
         </button>
 
@@ -183,7 +189,7 @@ export default function MyTasks({
             <p>Priority</p>
 
             <div className="my-tasks-filter-options">
-              {['all', 'high', 'medium', 'low'].map((priority) => (
+              {["all", "high", "medium", "low"].map((priority) => (
                 <button
                   type="button"
                   key={priority}
@@ -191,13 +197,12 @@ export default function MyTasks({
                   className={`my-tasks-option ${
                     priorityFilter === priority
                       ? `my-tasks-priority-${priority}`
-                      : 'my-tasks-option-inactive'
+                      : "my-tasks-option-inactive"
                   }`}
                 >
-                  {priority === 'all'
-                    ? 'All priorities'
-                    : priority.charAt(0).toUpperCase() +
-                      priority.slice(1)}
+                  {priority === "all"
+                    ? "All priorities"
+                    : priority.charAt(0).toUpperCase() + priority.slice(1)}
                 </button>
               ))}
             </div>
@@ -209,11 +214,11 @@ export default function MyTasks({
             <div className="my-tasks-filter-options">
               <button
                 type="button"
-                onClick={() => setCategoryFilter('all')}
+                onClick={() => setCategoryFilter("all")}
                 className={`my-tasks-option ${
-                  categoryFilter === 'all'
-                    ? 'my-tasks-option-brand'
-                    : 'my-tasks-option-inactive'
+                  categoryFilter === "all"
+                    ? "my-tasks-option-brand"
+                    : "my-tasks-option-inactive"
                 }`}
               >
                 All
@@ -229,11 +234,11 @@ export default function MyTasks({
                     categoryFilter === category.id
                       ? {
                           backgroundColor: category.color,
-                          color: '#ffffff',
+                          color: "#ffffff",
                         }
                       : {
-                          backgroundColor: '#F5F5F7',
-                          color: '#374151',
+                          backgroundColor: "#F5F5F7",
+                          color: "#374151",
                         }
                   }
                 >
@@ -248,8 +253,8 @@ export default function MyTasks({
               <button
                 type="button"
                 onClick={() => {
-                  setPriorityFilter('all')
-                  setCategoryFilter('all')
+                  setPriorityFilter("all");
+                  setCategoryFilter("all");
                 }}
                 className="my-tasks-clear-filters"
               >
@@ -264,11 +269,11 @@ export default function MyTasks({
       <div className="my-tasks-status-list">
         {statusFilters.map(({ key, label }) => {
           const count =
-            key === 'all'
+            key === "all"
               ? tasks.length
-              : tasks.filter((task) => task.status === key).length
+              : tasks.filter((task) => task.status === key).length;
 
-          const active = statusFilter === key
+          const active = statusFilter === key;
 
           return (
             <button
@@ -276,7 +281,7 @@ export default function MyTasks({
               key={key}
               onClick={() => setStatusFilter(key)}
               className={`my-tasks-status-chip ${
-                active ? 'my-tasks-status-active' : ''
+                active ? "my-tasks-status-active" : ""
               }`}
             >
               {label}
@@ -284,14 +289,14 @@ export default function MyTasks({
               <span
                 className={
                   active
-                    ? 'my-tasks-status-count-active'
-                    : 'my-tasks-status-count'
+                    ? "my-tasks-status-count-active"
+                    : "my-tasks-status-count"
                 }
               >
                 {count}
               </span>
             </button>
-          )
+          );
         })}
       </div>
 
@@ -301,7 +306,7 @@ export default function MyTasks({
           <EmptyTasks
             onCreateTask={onCreateTask}
             hasFilter={
-              statusFilter !== 'all' ||
+              statusFilter !== "all" ||
               activeFilterCount > 0 ||
               Boolean(searchQuery)
             }
@@ -356,35 +361,28 @@ export default function MyTasks({
       {deleteConfirm && (
         <DeleteModal
           onConfirm={() => {
-            onDeleteTask(deleteConfirm)
-            setDeleteConfirm(null)
+            onDeleteTask(deleteConfirm);
+            setDeleteConfirm(null);
           }}
           onClose={() => setDeleteConfirm(null)}
         />
       )}
     </div>
-  )
+  );
 }
 
 /* =========================
    Desktop table row
    ========================= */
 
-function DesktopRow({
-  task,
-  cat,
-  onView,
-  onEdit,
-  onDelete,
-  onComplete,
-}) {
-  const isDone = task.status === 'completed'
-  const isOverdue = task.status === 'overdue'
+function DesktopRow({ task, cat, onView, onEdit, onDelete, onComplete }) {
+  const isDone = task.status === "completed";
+  const isOverdue = task.status === "overdue";
 
   return (
     <div
       className={`my-tasks-desktop-row ${
-        isOverdue ? 'my-tasks-row-overdue' : ''
+        isOverdue ? "my-tasks-row-overdue" : ""
       }`}
     >
       <button
@@ -402,35 +400,30 @@ function DesktopRow({
       <div className="my-tasks-row-content">
         <p
           className={`my-tasks-row-title ${
-            isDone ? 'my-tasks-title-completed' : ''
+            isDone ? "my-tasks-title-completed" : ""
           }`}
         >
           {task.title}
         </p>
 
         {task.description && (
-          <p className="my-tasks-row-description">
-            {task.description}
-          </p>
+          <p className="my-tasks-row-description">{task.description}</p>
         )}
       </div>
 
-      <CategoryChip
-        name={cat.name}
-        color={cat.color}
-      />
+      <CategoryChip name={cat.name} color={cat.color} />
 
       <PriorityBadge priority={task.priority} />
 
       <span
         className={`my-tasks-due-date ${
-          isOverdue ? 'my-tasks-due-overdue' : ''
+          isOverdue ? "my-tasks-due-overdue" : ""
         }`}
       >
         {isOverdue && <AlertCircle size={12} />}
-        {new Date(task.dueDate).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
+        {new Date(task.dueDate).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
         })}
       </span>
 
@@ -457,32 +450,25 @@ function DesktopRow({
         />
       </div>
     </div>
-  )
+  );
 }
 
 /* =========================
    Mobile card
    ========================= */
 
-function MobileCard({
-  task,
-  cat,
-  onView,
-  onEdit,
-  onDelete,
-  onComplete,
-}) {
-  const isDone = task.status === 'completed'
-  const isOverdue = task.status === 'overdue'
+function MobileCard({ task, cat, onView, onEdit, onDelete, onComplete }) {
+  const isDone = task.status === "completed";
+  const isOverdue = task.status === "overdue";
 
   return (
     <div
       className={`my-tasks-mobile-card ${
         isOverdue
-          ? 'my-tasks-mobile-overdue'
+          ? "my-tasks-mobile-overdue"
           : isDone
-            ? 'my-tasks-mobile-completed'
-            : ''
+            ? "my-tasks-mobile-completed"
+            : ""
       }`}
     >
       <div
@@ -498,41 +484,30 @@ function MobileCard({
             className="my-tasks-mobile-complete"
           >
             {isDone ? (
-              <CheckCircle2
-                size={20}
-                className="my-tasks-completed-icon"
-              />
+              <CheckCircle2 size={20} className="my-tasks-completed-icon" />
             ) : (
-              <Circle
-                size={20}
-                className="my-tasks-circle-icon"
-              />
+              <Circle size={20} className="my-tasks-circle-icon" />
             )}
           </button>
 
           <div className="my-tasks-mobile-title-content">
             <p
               className={`my-tasks-mobile-title ${
-                isDone ? 'my-tasks-title-completed' : ''
+                isDone ? "my-tasks-title-completed" : ""
               }`}
             >
               {task.title}
             </p>
 
             {task.description && (
-              <p className="my-tasks-mobile-description">
-                {task.description}
-              </p>
+              <p className="my-tasks-mobile-description">{task.description}</p>
             )}
           </div>
         </div>
 
         {/* Badges */}
         <div className="my-tasks-mobile-badges">
-          <CategoryChip
-            name={cat.name}
-            color={cat.color}
-          />
+          <CategoryChip name={cat.name} color={cat.color} />
 
           <PriorityBadge priority={task.priority} />
 
@@ -543,16 +518,16 @@ function MobileCard({
         <div className="my-tasks-mobile-footer">
           <span
             className={`my-tasks-mobile-date ${
-              isOverdue ? 'my-tasks-mobile-date-overdue' : ''
+              isOverdue ? "my-tasks-mobile-date-overdue" : ""
             }`}
           >
             <Calendar size={12} />
 
-            {isOverdue ? 'Overdue · ' : ''}
+            {isOverdue ? "Overdue · " : ""}
 
-            {new Date(task.dueDate).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
+            {new Date(task.dueDate).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
             })}
           </span>
 
@@ -585,19 +560,14 @@ function MobileCard({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 /* =========================
    Action button
    ========================= */
 
-function ActionBtn({
-  icon: Icon,
-  title,
-  onClick,
-  hoverCls,
-}) {
+function ActionBtn({ icon: Icon, title, onClick, hoverCls }) {
   return (
     <button
       type="button"
@@ -607,7 +577,7 @@ function ActionBtn({
     >
       <Icon size={14} />
     </button>
-  )
+  );
 }
 
 /* =========================
@@ -670,12 +640,7 @@ function EmptyTasks({ onCreateTask, hasFilter }) {
 
         {!hasFilter && (
           <>
-            <circle
-              cx="72"
-              cy="24"
-              r="14"
-              fill="#7C3AED"
-            />
+            <circle cx="72" cy="24" r="14" fill="#7C3AED" />
 
             <line
               x1="72"
@@ -734,13 +699,13 @@ function EmptyTasks({ onCreateTask, hasFilter }) {
       </svg>
 
       <p className="my-tasks-empty-title">
-        {hasFilter ? 'No matching tasks' : 'No tasks yet'}
+        {hasFilter ? "No matching tasks" : "No tasks yet"}
       </p>
 
       <p className="my-tasks-empty-description">
         {hasFilter
-          ? 'Try adjusting your filters or search query.'
-          : 'Create your first task to start tracking your work.'}
+          ? "Try adjusting your filters or search query."
+          : "Create your first task to start tracking your work."}
       </p>
 
       {!hasFilter && (
@@ -754,7 +719,7 @@ function EmptyTasks({ onCreateTask, hasFilter }) {
         </button>
       )}
     </div>
-  )
+  );
 }
 
 /* =========================
@@ -764,10 +729,7 @@ function EmptyTasks({ onCreateTask, hasFilter }) {
 function DeleteModal({ onConfirm, onClose }) {
   return (
     <div className="my-tasks-modal">
-      <div
-        className="my-tasks-modal-overlay"
-        onClick={onClose}
-      />
+      <div className="my-tasks-modal-overlay" onClick={onClose} />
 
       <div className="my-tasks-delete-modal slide-up">
         <div className="my-tasks-delete-icon">
@@ -776,9 +738,7 @@ function DeleteModal({ onConfirm, onClose }) {
 
         <h3>Delete this task?</h3>
 
-        <p>
-          This action cannot be undone.
-        </p>
+        <p>This action cannot be undone.</p>
 
         <div className="my-tasks-delete-actions">
           <button
@@ -799,5 +759,5 @@ function DeleteModal({ onConfirm, onClose }) {
         </div>
       </div>
     </div>
-  )
+  );
 }
