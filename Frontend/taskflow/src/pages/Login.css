@@ -419,14 +419,16 @@
    Responsive
    ========================= */
 
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
+
   .login-left-panel {
     display: flex;
+    width: 42%;
+    padding: 32px;
   }
 
   .login-right-panel {
-    padding-right: 64px;
-    padding-left: 64px;
+    padding: 40px;
   }
 
   .login-mobile-brand {
@@ -434,8 +436,7 @@
   }
 
   .login-form-wrapper {
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0 auto;
   }
 }
 
@@ -446,26 +447,83 @@
   }
 }
 
-@media (max-width: 1023px) {
-  .login-right-panel {
+@media (max-width: 768px) {
+
+  .login-page {
     min-height: 100vh;
+  }
+
+  .login-left-panel {
+    display: none;
+  }
+
+  .login-right-panel {
+    width: 100%;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .login-form-wrapper {
+    max-width: 420px;
+    margin: 0 auto;
   }
 }
 
 @media (max-width: 480px) {
+
   .login-right-panel {
-    padding: 32px 20px;
+    justify-content: flex-start;
+    padding: 24px 20px;
   }
 
   .login-mobile-brand {
-    margin-bottom: 32px;
+    margin-bottom: 40px;
+  }
+
+  .login-form-wrapper {
+    max-width: 100%;
   }
 
   .login-heading {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .login-heading h2 {
     font-size: 22px;
+  }
+
+  .login-field input {
+    min-height: 44px;
+  }
+
+  .login-submit-button {
+    min-height: 44px;
+  }
+
+  .login-register-text {
+    margin-top: 20px;
+  }
+}
+
+/* =========================
+   Tablet / Narrow Desktop
+   ========================= */
+
+@media (max-width: 768px) and (min-height: 600px) {
+  .login-right-panel {
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .login-mobile-brand {
+    width: 100%;
+    max-width: 384px;
+    margin: 0 auto 32px;
+  }
+
+  .login-form-wrapper {
+    width: 100%;
+    max-width: 384px;
+    margin: 0 auto;
   }
 }
