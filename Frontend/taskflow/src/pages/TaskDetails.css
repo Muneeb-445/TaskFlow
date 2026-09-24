@@ -341,3 +341,26 @@
     margin-left: 0;
   }
 }
+
+.task-details-start-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border: 1px solid #7c3aed;
+  border-radius: 8px;
+  background: #7c3aed;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.task-details-start-button:hover {
+  background: #6d28d9;
+  border-color: #6d28d9;
+}
