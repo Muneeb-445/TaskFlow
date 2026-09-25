@@ -16,8 +16,8 @@ export default function Login({ onLogin, onNav }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = (event) => {
+    event.preventDefault()
 
     if (!email || !password) {
       setError('Please fill in all fields.')
