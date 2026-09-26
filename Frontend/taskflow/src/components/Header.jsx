@@ -26,7 +26,7 @@ export default function Header({
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
 
-  const initials = user.name
+  const initials = user.fullname
     .split(" ")
     .map((name) => name[0])
     .join("")
@@ -107,7 +107,7 @@ export default function Header({
           >
             <div className="avatar-circle">{initials}</div>
 
-            <span className="avatar-name">{user.name.split(" ")[0]}</span>
+            <span className="avatar-name">{user.fullname.split(" ")[0]}</span>
 
             <ChevronDown size={14} className="avatar-chevron" />
           </button>
@@ -121,7 +121,7 @@ export default function Header({
 
               <div className="avatar-dropdown fade-in">
                 <div className="avatar-user-info">
-                  <p className="avatar-user-name">{user.name}</p>
+                  <p className="avatar-user-name">{user.fullname}</p>
 
                   <p className="avatar-user-email">{user.email}</p>
                 </div>

@@ -253,7 +253,7 @@ export default function Dashboard({
         <div>
           <h1 className="dashboard-heading">
             {greeting},{' '}
-            {user.name.split(' ')[0]} 👋
+            {user.fullname.split(' ')[0]} 👋
           </h1>
 
           <p className="dashboard-date">

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { initialTasks, initialCategories, initialUser } from "./data";
 
 import Toast from "./components/Toast";
@@ -18,6 +18,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 
 import "./App.css";
+import { getCurrentUser } from "./api/users";
 
 let taskIdCounter = 100;
 let catIdCounter = 100;
@@ -26,6 +27,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [page, setPage] = useState("login");
   const [user, setUser] = useState(initialUser);
+  const [authLoading, setAuthLoading] = useState(true);
   const [tasks, setTasks] = useState(initialTasks);
   const [categories, setCategories] = useState(initialCategories);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
@@ -34,6 +36,32 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const today = new Date().toISOString().slice(0, 10);
+  useEffect(() => {
+    const restoreAuth = async () => {
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        setAuthLoading(false);
+        return;
+      }
+
+      try {
+        const currentUser = await getCurrentUser();
+
+        setUser(currentUser);
+        setIsLoggedIn(true);
+        setPage("dashboard");
+      } catch {
+        localStorage.removeItem("access_token");
+        setIsLoggedIn(false);
+        setPage("login");
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    restoreAuth();
+  }, []);
 
   const showToast = useCallback((message, type = "success") => {
     const id = Math.random().toString(36).slice(2);
@@ -62,6 +90,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("access_token");
     setIsLoggedIn(false);
     setPage("login");
   };
@@ -229,6 +258,9 @@ export default function App() {
     showToast("Category deleted. Tasks moved to Uncategorized.", "info");
   };
 
+  if (authLoading) {
+    return null;
+  }
   /*
    * Authentication screens
    */
@@ -239,9 +271,7 @@ export default function App() {
 
         {page === "login" && <Login onLogin={handleLogin} onNav={handleNav} />}
 
-        {page === "register" && (
-          <Register onNav={handleNav} />
-        )}
+        {page === "register" && <Register onNav={handleNav} />}
 
         {page === "forgot-password" && <ForgotPassword onNav={handleNav} />}
       </div>

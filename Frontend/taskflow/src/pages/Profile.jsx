@@ -20,7 +20,7 @@ function checkPassword(password) {
 }
 
 export default function Profile({ user, onSave, showToast }) {
-  const [name, setName] = useState(user.name)
+  const [name, setName] = useState(user.fullname)
   const [email, setEmail] = useState(user.email)
   const [bio, setBio] = useState(user.bio)
   const [saving, setSaving] = useState(false)
