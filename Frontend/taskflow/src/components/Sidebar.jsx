@@ -87,7 +87,7 @@ export default function Sidebar({ current, onNav, onLogout }) {
   )
 }
 
-/* Mobile bottom navigation */
+/* bottom navigation on Mobile Screen */
 export function BottomNav({ current, onNav }) {
   const tabs = navItems.slice(0, 4)
 
