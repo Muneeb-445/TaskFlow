@@ -206,23 +206,12 @@ function DeleteConfirm({
 }
 export default function Categories({
   categories,
-  tasks,
   onCreate,
   onEdit,
   onDelete,
 }) {
   const [modal, setModal] = useState(null)
   const [deleting, setDeleting] = useState(null)
-
-  const getCatTasks = (id) =>
-    tasks.filter((task) => task.categoryId === id)
-
-  const getCompleted = (id) =>
-    tasks.filter(
-      (task) =>
-        task.categoryId === id &&
-        task.status === 'completed'
-    ).length
 
   return (
     <div className="categories-page fade-in">
@@ -273,159 +262,148 @@ export default function Categories({
         </div>
       ) : (
         <div className="categories-grid">
-          {categories.map((category) => {
-            const catTasks = getCatTasks(category.id)
-            const done = getCompleted(category.id)
+  {categories.map((category) => {
+    return (
+      <div
+        key={category.id}
+        className="category-card"
+      >
+        {/* Color accent bar */}
+        <div
+          className="category-accent"
+          style={{
+            backgroundColor: category.color,
+          }}
+        />
 
-            const pct =
-              catTasks.length > 0
-                ? Math.round((done / catTasks.length) * 100)
-                : 0
-
-            return (
+        <div className="category-card-content">
+          <div className="category-card-header">
+            <div className="category-card-info">
               <div
-                key={category.id}
-                className="category-card"
+                className="category-card-icon"
+                style={{
+                  backgroundColor: `${category.color}20`,
+                }}
               >
-                {/* Color accent bar */}
-                <div
-                  className="category-accent"
+                <Tag
+                  size={16}
                   style={{
-                    backgroundColor: category.color,
+                    color: category.color,
                   }}
                 />
-
-                <div className="category-card-content">
-                  <div className="category-card-header">
-                    <div className="category-card-info">
-                      <div
-                        className="category-card-icon"
-                        style={{
-                          backgroundColor:
-                            `${category.color}20`,
-                        }}
-                      >
-                        <Tag
-                          size={16}
-                          style={{
-                            color: category.color,
-                          }}
-                        />
-                      </div>
-
-                      <div>
-                        <p className="category-card-name">
-                          {category.name}
-                        </p>
-
-                        <p className="category-card-task-count">
-                          {catTasks.length} tasks
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="category-card-actions">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setModal({
-                            id: category.id,
-                            name: category.name,
-                            color: category.color,
-                          })
-                        }
-                        className="category-action-button category-edit-button"
-                        aria-label={`Edit ${category.name}`}
-                      >
-                        <Edit2 size={14} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDeleting(category)}
-                        className="category-action-button category-delete-action"
-                        aria-label={`Delete ${category.name}`}
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Progress */}
-                  <div className="category-progress">
-                    <div className="category-progress-header">
-                      <span>Progress</span>
-
-                      <span
-                        className="category-progress-percent"
-                        style={{ color: category.color }}
-                      >
-                        {pct}%
-                      </span>
-                    </div>
-
-                    <div className="category-progress-track">
-                      <div
-                        className="category-progress-fill"
-                        style={{
-                          width: `${pct}%`,
-                          backgroundColor: category.color,
-                        }}
-                      />
-                    </div>
-
-                    <div className="category-progress-footer">
-                      <span className="category-completed">
-                        <CheckCircle2
-                          size={11}
-                        />
-                        {done} completed
-                      </span>
-
-                      <span>
-                        {catTasks.length - done} remaining
-                      </span>
-                    </div>
-                  </div>
-                </div>
               </div>
-            )
-          })}
+
+              <div>
+                <p className="category-card-name">
+                  {category.name}
+                </p>
+
+                <p className="category-card-task-count">
+                  {category.task_count} tasks
+                </p>
+              </div>
+            </div>
+
+            <div className="category-card-actions">
+              <button
+                type="button"
+                onClick={() =>
+                  setModal({
+                    id: category.id,
+                    name: category.name,
+                    color: category.color,
+                  })
+                }
+                className="category-action-button category-edit-button"
+                aria-label={`Edit ${category.name}`}
+              >
+                <Edit2 size={14} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDeleting(category)}
+                className="category-action-button category-delete-action"
+                aria-label={`Delete ${category.name}`}
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div className="category-progress">
+            <div className="category-progress-header">
+              <span>Progress</span>
+
+              <span
+                className="category-progress-percent"
+                style={{ color: category.color }}
+              >
+                {category.progress_percentage}%
+              </span>
+            </div>
+
+            <div className="category-progress-track">
+              <div
+                className="category-progress-fill"
+                style={{
+                  width: `${category.progress_percentage}%`,
+                  backgroundColor: category.color,
+                }}
+              />
+            </div>
+
+            <div className="category-progress-footer">
+              <span className="category-completed">
+                <CheckCircle2 size={11} />
+                {category.completed_count} completed
+              </span>
+
+              <span>
+                {category.remaining_count} remaining
+              </span>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+    )
+  })}
+</div>
+)}
 
-      {modal === 'create' && (
-        <CategoryModal
-          onSave={(name, color) => {
-            onCreate(name, color)
-            setModal(null)
-          }}
-          onClose={() => setModal(null)}
-        />
-      )}
+{modal === 'create' && (
+  <CategoryModal
+    onSave={(name, color) => {
+      onCreate(name, color)
+      setModal(null)
+    }}
+    onClose={() => setModal(null)}
+  />
+)}
 
-      {modal && modal !== 'create' && (
-        <CategoryModal
-          initial={modal}
-          onSave={(name, color) => {
-            onEdit(modal.id, name, color)
-            setModal(null)
-          }}
-          onClose={() => setModal(null)}
-        />
-      )}
+{modal && modal !== 'create' && (
+  <CategoryModal
+    initial={modal}
+    onSave={(name, color) => {
+      onEdit(modal.id, name, color)
+      setModal(null)
+    }}
+    onClose={() => setModal(null)}
+  />
+)}
 
-      {deleting && (
-        <DeleteConfirm
-          category={deleting}
-          taskCount={getCatTasks(deleting.id).length}
-          onConfirm={() => {
-            onDelete(deleting.id)
-            setDeleting(null)
-          }}
-          onClose={() => setDeleting(null)}
-        />
-      )}
-    </div>
-  )
+{deleting && (
+  <DeleteConfirm
+    category={deleting}
+    taskCount={deleting.task_count}
+    onConfirm={() => {
+      onDelete(deleting.id)
+      setDeleting(null)
+    }}
+    onClose={() => setDeleting(null)}
+  />
+)}
+</div>
+)
 }

@@ -110,8 +110,8 @@ export default function Profile({ user, onSave, showToast }) {
           </div>
 
           <div className="profile-user-summary">
-            <p className="profile-user-name">{user.name}</p>
-            <p className="profile-user-email">{user.email}</p>
+            <p className="profile-user-name">{name}</p>
+            <p className="profile-user-email">{email}</p>
           </div>
         </div>
 

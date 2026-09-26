@@ -19,9 +19,9 @@ import Settings from "./pages/Settings";
 
 import "./App.css";
 import { getCurrentUser } from "./api/users";
+import { getCategories,createCategory,updateCategory, deleteCategory, } from "./api/categories";
 
 let taskIdCounter = 100;
-let catIdCounter = 100;
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -36,32 +36,35 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const today = new Date().toISOString().slice(0, 10);
-  useEffect(() => {
-    const restoreAuth = async () => {
-      const token = localStorage.getItem("access_token");
+useEffect(() => {
+  const restoreAuth = async () => {
+    const token = localStorage.getItem("access_token");
 
-      if (!token) {
-        setAuthLoading(false);
-        return;
-      }
+    if (!token) {
+      setAuthLoading(false);
+      return;
+    }
 
-      try {
-        const currentUser = await getCurrentUser();
+    try {
+      const currentUser = await getCurrentUser();
+      const userCategories = await getCategories();
 
-        setUser(currentUser);
-        setIsLoggedIn(true);
-        setPage("dashboard");
-      } catch {
-        localStorage.removeItem("access_token");
-        setIsLoggedIn(false);
-        setPage("login");
-      } finally {
-        setAuthLoading(false);
-      }
-    };
+      setUser(currentUser);
+      setCategories(userCategories);
 
-    restoreAuth();
-  }, []);
+      setIsLoggedIn(true);
+      setPage("dashboard");
+    } catch {
+      localStorage.removeItem("access_token");
+      setIsLoggedIn(false);
+      setPage("login");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  restoreAuth();
+}, []);
 
   const showToast = useCallback((message, type = "success") => {
     const id = Math.random().toString(36).slice(2);
@@ -84,9 +87,21 @@ export default function App() {
     setToasts((toasts) => toasts.filter((toast) => toast.id !== id));
   };
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    setPage("dashboard");
+  const handleLogin = async () => {
+    try {
+      const currentUser = await getCurrentUser();
+      const userCategories = await getCategories();
+
+      setUser(currentUser);
+      setCategories(userCategories);
+
+      setIsLoggedIn(true);
+      setPage("dashboard");
+    } catch {
+      localStorage.removeItem("access_token");
+      setIsLoggedIn(false);
+      setPage("login");
+    }
   };
 
   const handleLogout = () => {
@@ -117,7 +132,13 @@ export default function App() {
     setEditingTaskId(id);
     setPage("edit-task");
   };
-
+    const handleStartTask = (taskId) => {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task.id === taskId ? { ...task, status: "in_progress" } : task,
+      ),
+    );
+  };
   const handleSaveTask = (data) => {
     if (editingTaskId) {
       setTasks((currentTasks) =>
@@ -203,26 +224,37 @@ export default function App() {
     showToast("Task reopened.", "info");
   };
 
-  const handleCreateCategory = (name, color) => {
+const handleCreateCategory = async (name, color) => {
+  try {
+    const newCategory = await createCategory(name);
+
     setCategories((currentCategories) => [
       ...currentCategories,
       {
-        id: `c${++catIdCounter}`,
-        name,
+        ...newCategory,
         color,
       },
     ]);
 
     showToast(`Category "${name}" created!`);
-  };
+  } catch (error) {
+    const message =
+      error.response?.data?.detail ||
+      "Failed to create category.";
 
-  const handleEditCategory = (id, name, color) => {
+    showToast(message, "error");
+  }
+};
+
+ const handleEditCategory = async (id, name, color) => {
+  try {
+    const updatedCategory = await updateCategory(id, name);
+
     setCategories((currentCategories) =>
       currentCategories.map((category) =>
         category.id === id
           ? {
-              ...category,
-              name,
+              ...updatedCategory,
               color,
             }
           : category,
@@ -230,33 +262,34 @@ export default function App() {
     );
 
     showToast("Category updated!");
-  };
-  const handleStartTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, status: "in_progress" } : task,
-      ),
-    );
-  };
+  } catch (error) {
+    const message =
+      error.response?.data?.detail ||
+      "Failed to update category.";
 
-  const handleDeleteCategory = (id) => {
+    showToast(message, "error");
+  }
+};
+
+const handleDeleteCategory = async (id) => {
+  try {
+    await deleteCategory(id);
+
     setCategories((currentCategories) =>
-      currentCategories.filter((category) => category.id !== id),
+      currentCategories.filter(
+        (category) => category.id !== id
+      )
     );
 
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.categoryId === id
-          ? {
-              ...task,
-              categoryId: "",
-            }
-          : task,
-      ),
-    );
+    showToast("Category deleted.", "info");
+  } catch (error) {
+    const message =
+      error.response?.data?.detail ||
+      "Failed to delete category.";
 
-    showToast("Category deleted. Tasks moved to Uncategorized.", "info");
-  };
+    showToast(message, "error");
+  }
+};
 
   if (authLoading) {
     return null;
@@ -365,7 +398,6 @@ export default function App() {
             {page === "categories" && (
               <Categories
                 categories={categories}
-                tasks={tasks}
                 onCreate={handleCreateCategory}
                 onEdit={handleEditCategory}
                 onDelete={handleDeleteCategory}
