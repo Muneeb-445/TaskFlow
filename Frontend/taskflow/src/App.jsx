@@ -240,7 +240,7 @@ export default function App() {
         {page === "login" && <Login onLogin={handleLogin} onNav={handleNav} />}
 
         {page === "register" && (
-          <Register onRegister={handleLogin} onNav={handleNav} />
+          <Register onNav={handleNav} />
         )}
 
         {page === "forgot-password" && <ForgotPassword onNav={handleNav} />}

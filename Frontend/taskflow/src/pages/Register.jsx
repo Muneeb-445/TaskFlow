@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Eye,
   EyeOff,
@@ -6,9 +6,10 @@ import {
   ArrowRight,
   CheckCircle,
   XCircle,
-} from 'lucide-react'
+} from "lucide-react";
 
-import './Register.css'
+import "./Register.css";
+import { registerUser } from "../api/auth";
 
 function checkPassword(password) {
   return {
@@ -16,69 +17,84 @@ function checkPassword(password) {
     upper: /[A-Z]/.test(password),
     number: /\d/.test(password),
     special: /[^A-Za-z0-9]/.test(password),
-  }
+  };
 }
 
 function CheckRow({ ok, label }) {
   return (
     <div
-      className={`register-check-row ${
-        ok ? 'check-valid' : 'check-invalid'
-      }`}
+      className={`register-check-row ${ok ? "check-valid" : "check-invalid"}`}
     >
       {ok ? <CheckCircle size={12} /> : <XCircle size={12} />}
       {label}
     </div>
-  )
+  );
 }
 
-export default function Register({ onRegister, onNav }) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState({})
+export default function Register({ onNav }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const checks = checkPassword(password)
-  const allChecks = Object.values(checks).every(Boolean)
+  const checks = checkPassword(password);
+  const allChecks = Object.values(checks).every(Boolean);
 
   const validate = () => {
-    const errors = {}
+    const errors = {};
 
     if (!name.trim()) {
-      errors.name = 'Full name is required.'
+      errors.name = "Full name is required.";
     }
 
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
-      errors.email = 'Enter a valid email.'
+      errors.email = "Enter a valid email.";
     }
 
     if (!allChecks) {
-      errors.password = 'Password does not meet all requirements.'
+      errors.password = "Password does not meet all requirements.";
     }
 
-    return errors
-  }
+    return errors;
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    const validationErrors = validate()
+    const validationErrors = validate();
 
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors)
-      return
+      setErrors(validationErrors);
+      return;
     }
 
-    setErrors({})
-    setLoading(true)
+    setErrors({});
+    setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false)
-      onRegister()
-    }, 900)
-  }
+    try {
+      const user = await registerUser({
+        fullname: name.trim(),
+        email: email.trim(),
+        password,
+      });
+
+      console.log("Registered user:", user);
+
+      onNav('login');
+    } catch (error) {
+      const message =
+        error.response?.data?.detail ||
+        "Registration failed. Please try again.";
+
+      setErrors({
+        form: message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="register-page">
@@ -106,22 +122,19 @@ export default function Register({ onRegister, onNav }) {
             </h1>
 
             <p>
-              Join thousands of makers who use TaskFlow to stay focused and
-              get things done.
+              Join thousands of makers who use TaskFlow to stay focused and get
+              things done.
             </p>
 
             {/* Stats */}
             <div className="register-stats">
               {[
-                { stat: '14k+', label: 'Active users' },
-                { stat: '98%', label: 'Satisfaction rate' },
-                { stat: '2.4M', label: 'Tasks completed' },
-                { stat: '4.9★', label: 'App store rating' },
+                { stat: "14k+", label: "Active users" },
+                { stat: "98%", label: "Satisfaction rate" },
+                { stat: "2.4M", label: "Tasks completed" },
+                { stat: "4.9★", label: "App store rating" },
               ].map(({ stat, label }) => (
-                <div
-                  className="register-stat-card"
-                  key={label}
-                >
+                <div className="register-stat-card" key={label}>
                   <p>{stat}</p>
                   <span>{label}</span>
                 </div>
@@ -150,10 +163,12 @@ export default function Register({ onRegister, onNav }) {
           </div>
 
           {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="register-form"
-          >
+          <form onSubmit={handleSubmit} className="register-form">
+            {errors.form && 
+            (<p className="register-error">
+              {errors.form}
+              </p>
+            )}
             {/* Full name */}
             <div className="register-field">
               <label>Full name</label>
@@ -163,16 +178,10 @@ export default function Register({ onRegister, onNav }) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Muneeb Hassan"
-                className={
-                  errors.name ? 'register-input-error' : ''
-                }
+                className={errors.name ? "register-input-error" : ""}
               />
 
-              {errors.name && (
-                <p className="register-error">
-                  {errors.name}
-                </p>
-              )}
+              {errors.name && <p className="register-error">{errors.name}</p>}
             </div>
 
             {/* Email */}
@@ -184,16 +193,10 @@ export default function Register({ onRegister, onNav }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className={
-                  errors.email ? 'register-input-error' : ''
-                }
+                className={errors.email ? "register-input-error" : ""}
               />
 
-              {errors.email && (
-                <p className="register-error">
-                  {errors.email}
-                </p>
-              )}
+              {errors.email && <p className="register-error">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -202,66 +205,38 @@ export default function Register({ onRegister, onNav }) {
 
               <div className="register-password-wrapper">
                 <input
-                  type={showPass ? 'text' : 'password'}
+                  type={showPass ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong password"
-                  className={
-                    errors.password
-                      ? 'register-input-error'
-                      : ''
-                  }
+                  className={errors.password ? "register-input-error" : ""}
                 />
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPass((current) => !current)
-                  }
+                  onClick={() => setShowPass((current) => !current)}
                   className="register-password-toggle"
-                  aria-label={
-                    showPass
-                      ? 'Hide password'
-                      : 'Show password'
-                  }
+                  aria-label={showPass ? "Hide password" : "Show password"}
                 >
-                  {showPass ? (
-                    <EyeOff size={16} />
-                  ) : (
-                    <Eye size={16} />
-                  )}
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
 
               {/* Password requirements */}
               {password && (
                 <div className="register-password-checks">
-                  <CheckRow
-                    ok={checks.length}
-                    label="8+ characters"
-                  />
+                  <CheckRow ok={checks.length} label="8+ characters" />
 
-                  <CheckRow
-                    ok={checks.upper}
-                    label="Uppercase letter"
-                  />
+                  <CheckRow ok={checks.upper} label="Uppercase letter" />
 
-                  <CheckRow
-                    ok={checks.number}
-                    label="Number"
-                  />
+                  <CheckRow ok={checks.number} label="Number" />
 
-                  <CheckRow
-                    ok={checks.special}
-                    label="Special character"
-                  />
+                  <CheckRow ok={checks.special} label="Special character" />
                 </div>
               )}
 
               {errors.password && (
-                <p className="register-error">
-                  {errors.password}
-                </p>
+                <p className="register-error">{errors.password}</p>
               )}
             </div>
 
@@ -284,16 +259,13 @@ export default function Register({ onRegister, onNav }) {
 
           {/* Login link */}
           <p className="register-login-text">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={() => onNav('login')}
-            >
+            Already have an account?{" "}
+            <button type="button" onClick={() => onNav("login")}>
               Sign in
             </button>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }
