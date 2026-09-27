@@ -1,19 +1,5 @@
-import api from './client'
-
-const CATEGORY_COLORS = [
-  '#7C3AED',
-  '#0D9488',
-  '#F97316',
-  '#2563EB',
-  '#DB2777',
-  '#16A34A',
-]
-
-function getCategoryColor(categoryId) {
-  return CATEGORY_COLORS[
-    categoryId % CATEGORY_COLORS.length
-  ]
-}
+import api from '../../../api/client'
+import { getCategoryColor } from '../utils/categoryColors'
 
 export async function getCategories() {
   const response = await api.get('/categories')
