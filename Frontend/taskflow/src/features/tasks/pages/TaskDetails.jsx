@@ -12,7 +12,7 @@ import {
   AlignLeft,
 } from "lucide-react";
 
-import { PriorityBadge, StatusBadge, CategoryChip } from "../components/badges";
+import { PriorityBadge, StatusBadge, CategoryChip } from "../../../components/badges";
 
 import "./TaskDetails.css";
 

@@ -10,9 +10,9 @@ import Login from './features/auth/pages/Login'
 import Register from './features/auth/pages/Register'
 import ForgotPassword from "./features/auth/pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
-import MyTasks from "./pages/MyTasks";
-import TaskDetails from "./pages/TaskDetails";
-import CreateEditTask from "./pages/CreateEditTask";
+import MyTasks from './features/tasks/pages/MyTasks'
+import TaskDetails from './features/tasks/pages/TaskDetails'
+import CreateEditTask from './features/tasks/pages/CreateEditTask'
 import Categories from './features/categories/pages/Categories'
 import Profile from "./features/user/pages/Profile";
 import Settings from "./features/user/pages/Settings";
