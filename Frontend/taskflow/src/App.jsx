@@ -6,9 +6,9 @@ import Sidebar, { BottomNav } from "./components/Sidebar";
 import Header from "./components/Header";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
+import Login from './features/auth/pages/Login'
+import Register from './features/auth/pages/Register'
+import ForgotPassword from "./features/auth/pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import MyTasks from "./pages/MyTasks";
 import TaskDetails from "./pages/TaskDetails";
