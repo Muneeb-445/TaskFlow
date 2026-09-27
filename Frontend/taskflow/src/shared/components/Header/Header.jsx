@@ -10,7 +10,7 @@ import {
   Plus,
 } from "lucide-react";
 
-import NotificationPanel from "./NotificationPanel";
+import NotificationPanel from "../NotificationPanel/NotificationPanel";
 import "./Header.css";
 
 const NOTIF_COUNT = 2;

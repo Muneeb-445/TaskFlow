@@ -1,5 +1,5 @@
 // client have the main Backend BaseUrl API
-import api from "../../../api/client";
+import api from '../../../shared/api/client'
 
 
 // User Registeration API

@@ -10,7 +10,7 @@ import {
 import {
   PriorityBadge,
   CategoryChip,
-} from '../../../components/badges'
+} from '../../../shared/components/badges/badges'
 
 export default function DesktopTaskRow({
   task,

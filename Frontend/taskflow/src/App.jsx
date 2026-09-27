@@ -1,10 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import { initialTasks, initialCategories, initialUser } from "./data";
 
-import Toast from "./components/Toast";
-import Sidebar, { BottomNav } from "./components/Sidebar";
-import Header from "./components/Header";
-import ErrorBoundary from "./components/ErrorBoundary";
+import Toast from "./shared/components/Toast/Toast";
+import Sidebar, { BottomNav } from "./shared/components/Sidebar/Sidebar";
+import Header from "./shared/components/Header/Header";
+import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
 import Login from './features/auth/pages/Login'
 import Register from './features/auth/pages/Register'

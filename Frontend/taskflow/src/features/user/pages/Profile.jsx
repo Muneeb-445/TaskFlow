@@ -156,7 +156,7 @@ export default function Profile({ user, onSave, showToast }) {
             </label>
 
             <textarea
-              value={bio}
+              value={bio ?? ""}
               onChange={(e) => setBio(e.target.value)}
               rows={3}
               placeholder="Tell us a bit about yourself..."

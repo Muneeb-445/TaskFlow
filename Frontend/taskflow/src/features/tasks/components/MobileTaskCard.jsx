@@ -11,7 +11,7 @@ import {
   PriorityBadge,
   StatusBadge,
   CategoryChip,
-} from '../../../components/badges'
+} from '../../../shared/components/badges/badges'
 
 export default function MobileTaskCard({
   task,

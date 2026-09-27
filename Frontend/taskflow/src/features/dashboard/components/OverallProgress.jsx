@@ -1,4 +1,4 @@
-import ProgressRing from '../../../components/ProgressRing'
+import ProgressRing from '../../../shared/components/ProgressRing/ProgressRing'
 
 export default function OverallProgress({
   completed,

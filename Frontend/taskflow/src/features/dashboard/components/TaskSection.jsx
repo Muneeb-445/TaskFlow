@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import {
   PriorityBadge,
   CategoryChip,
-} from '../../../components/badges'
+} from '../../../shared/components/badges/badges'
 
 export default function TaskSection({
   title,
@@ -49,7 +49,7 @@ export default function TaskSection({
             const category = getCat(task.categoryId)
 
             return (
-              <button
+              <button 
                 key={task.id}
                 type="button"
                 onClick={() => onSelect(task.id)}

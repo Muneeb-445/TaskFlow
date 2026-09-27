@@ -1,4 +1,4 @@
-import api from '../../../api/client'
+import api from '../../../shared/api/client'
 import { getCategoryColor } from '../utils/categoryColors'
 
 export async function getCategories() {

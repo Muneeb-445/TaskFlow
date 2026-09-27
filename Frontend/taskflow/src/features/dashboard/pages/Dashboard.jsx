@@ -12,7 +12,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import { DashboardSkeleton } from "../../../components/Skeleton";
+import { DashboardSkeleton } from "../../../shared/components/Skeleton/Skeleton";
 import StatCard from "../components/StatCard";
 import StreakBar from "../components/StreakBar";
 import OverallProgress from "../components/OverallProgress";
