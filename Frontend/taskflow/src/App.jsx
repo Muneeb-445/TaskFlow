@@ -14,11 +14,11 @@ import MyTasks from "./pages/MyTasks";
 import TaskDetails from "./pages/TaskDetails";
 import CreateEditTask from "./pages/CreateEditTask";
 import Categories from './features/categories/pages/Categories'
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
+import Profile from "./features/user/pages/Profile";
+import Settings from "./features/user/pages/Settings";
 
 import "./App.css";
-import { getCurrentUser } from "./api/users";
+import { getCurrentUser } from './features/user/api/users'
 import { getCategories,createCategory,updateCategory, deleteCategory, } from "./features/categories/api/categories";
 
 let taskIdCounter = 100;
