@@ -1,91 +1,92 @@
-import { useState, useCallback, useEffect } from "react";
-import { initialTasks, initialCategories, initialUser } from "./data";
+import { useState, useEffect } from "react";
+import { initialTasks } from "./data";
 
 import Toast from "./shared/components/Toast/Toast";
+import useToast from "./shared/hooks/useToast";
 import Sidebar, { BottomNav } from "./shared/components/Sidebar/Sidebar";
 import Header from "./shared/components/Header/Header";
 import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
-import Login from './features/auth/pages/Login'
-import Register from './features/auth/pages/Register'
+import useAuth from './features/auth/hooks/useAuth'
+import Login from "./features/auth/pages/Login";
+import Register from "./features/auth/pages/Register";
 import ForgotPassword from "./features/auth/pages/ForgotPassword";
 import Dashboard from "./features/dashboard/pages/Dashboard";
-import MyTasks from './features/tasks/pages/MyTasks'
-import TaskDetails from './features/tasks/pages/TaskDetails'
-import CreateEditTask from './features/tasks/pages/CreateEditTask'
-import Categories from './features/categories/pages/Categories'
+import MyTasks from "./features/tasks/pages/MyTasks";
+import TaskDetails from "./features/tasks/pages/TaskDetails";
+import CreateEditTask from "./features/tasks/pages/CreateEditTask";
+import Categories from "./features/categories/pages/Categories";
 import Profile from "./features/user/pages/Profile";
 import Settings from "./features/user/pages/Settings";
 
 import "./App.css";
-import { getCurrentUser } from './features/user/api/users'
-import { getCategories,createCategory,updateCategory, deleteCategory, } from "./features/categories/api/categories";
+import { getCurrentUser } from "./features/user/api/users";
+import { getCategories } from "./features/categories/api/categories";
+import useCategories from "./features/categories/hooks/useCategories";
 
 let taskIdCounter = 100;
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [page, setPage] = useState("login");
-  const [user, setUser] = useState(initialUser);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState(initialTasks);
-  const [categories, setCategories] = useState(initialCategories);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
-  const [toasts, setToasts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const today = new Date().toISOString().slice(0, 10);
-useEffect(() => {
-  const restoreAuth = async () => {
-    const token = localStorage.getItem("access_token");
 
-    if (!token) {
-      setAuthLoading(false);
-      return;
-    }
+  const {
+  toasts,
+  showToast,
+  removeToast,
+} = useToast();
 
-    try {
-      const currentUser = await getCurrentUser();
-      const userCategories = await getCategories();
+  const {
+  categories,
+  setCategories,
+  handleCreateCategory,
+  handleEditCategory,
+  handleDeleteCategory,
+} = useCategories([], showToast)
 
-      setUser(currentUser);
-      setCategories(userCategories);
+  const {
+  isLoggedIn,
+  authLoading,
+  setAuthLoading,
+  completeLogin,
+  logout,
+} = useAuth()
 
-      setIsLoggedIn(true);
-      setPage("dashboard");
-    } catch {
-      localStorage.removeItem("access_token");
-      setIsLoggedIn(false);
-      setPage("login");
-    } finally {
-      setAuthLoading(false);
-    }
-  };
+  useEffect(() => {
+    const restoreAuth = async () => {
+      const token = localStorage.getItem("access_token");
 
-  restoreAuth();
-}, []);
+      if (!token) {
+        setAuthLoading(false);
+        return;
+      }
 
-  const showToast = useCallback((message, type = "success") => {
-    const id = Math.random().toString(36).slice(2);
+      try {
+        const currentUser = await getCurrentUser();
+        const userCategories = await getCategories();
 
-    setToasts((toasts) => [
-      ...toasts,
-      {
-        id,
-        type,
-        message,
-      },
-    ]);
+        setUser(currentUser);
+        setCategories(userCategories);
 
-    setTimeout(() => {
-      setToasts((toasts) => toasts.filter((toast) => toast.id !== id));
-    }, 3500);
+        completeLogin()
+        setPage("dashboard");
+      } catch {
+        localStorage.removeItem("access_token");
+        logout()
+        setPage("login");
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    restoreAuth();
   }, []);
-
-  const removeToast = (id) => {
-    setToasts((toasts) => toasts.filter((toast) => toast.id !== id));
-  };
 
   const handleLogin = async () => {
     try {
@@ -95,18 +96,18 @@ useEffect(() => {
       setUser(currentUser);
       setCategories(userCategories);
 
-      setIsLoggedIn(true);
+      completeLogin()
       setPage("dashboard");
     } catch {
       localStorage.removeItem("access_token");
-      setIsLoggedIn(false);
+      logout()
       setPage("login");
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    setIsLoggedIn(false);
+    logout()
     setPage("login");
   };
 
@@ -132,7 +133,7 @@ useEffect(() => {
     setEditingTaskId(id);
     setPage("edit-task");
   };
-    const handleStartTask = (taskId) => {
+  const handleStartTask = (taskId) => {
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
         task.id === taskId ? { ...task, status: "in_progress" } : task,
@@ -223,73 +224,6 @@ useEffect(() => {
 
     showToast("Task reopened.", "info");
   };
-
-const handleCreateCategory = async (name, color) => {
-  try {
-    const newCategory = await createCategory(name);
-
-    setCategories((currentCategories) => [
-      ...currentCategories,
-      {
-        ...newCategory,
-        color,
-      },
-    ]);
-
-    showToast(`Category "${name}" created!`);
-  } catch (error) {
-    const message =
-      error.response?.data?.detail ||
-      "Failed to create category.";
-
-    showToast(message, "error");
-  }
-};
-
- const handleEditCategory = async (id, name, color) => {
-  try {
-    const updatedCategory = await updateCategory(id, name);
-
-    setCategories((currentCategories) =>
-      currentCategories.map((category) =>
-        category.id === id
-          ? {
-              ...updatedCategory,
-              color,
-            }
-          : category,
-      ),
-    );
-
-    showToast("Category updated!");
-  } catch (error) {
-    const message =
-      error.response?.data?.detail ||
-      "Failed to update category.";
-
-    showToast(message, "error");
-  }
-};
-
-const handleDeleteCategory = async (id) => {
-  try {
-    await deleteCategory(id);
-
-    setCategories((currentCategories) =>
-      currentCategories.filter(
-        (category) => category.id !== id
-      )
-    );
-
-    showToast("Category deleted.", "info");
-  } catch (error) {
-    const message =
-      error.response?.data?.detail ||
-      "Failed to delete category.";
-
-    showToast(message, "error");
-  }
-};
 
   if (authLoading) {
     return null;

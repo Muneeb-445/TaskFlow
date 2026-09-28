@@ -1,16 +1,3 @@
-export const initialUser = {
-  name: 'Muneeb Hassan',
-  email: 'muneeb@taskflow.io',
-  bio: 'Product designer and developer building delightful productivity tools.',
-}
-
-export const initialCategories = [
-  { id: 'c1', name: 'Work', color: '#7C3AED' },
-  { id: 'c2', name: 'Personal', color: '#F97316' },
-  { id: 'c3', name: 'Health', color: '#0D9488' },
-  { id: 'c4', name: 'Finance', color: '#FFB800' },
-  { id: 'c5', name: 'Learning', color: '#3B82F6' },
-]
 
 export const initialTasks = [
   {
