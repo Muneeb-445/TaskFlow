@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { initialTasks } from "./data";
 
 import Toast from "./shared/components/Toast/Toast";
 import useToast from "./shared/hooks/useToast";
@@ -7,13 +6,22 @@ import Sidebar, { BottomNav } from "./shared/components/Sidebar/Sidebar";
 import Header from "./shared/components/Header/Header";
 import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
-import useAuth from './features/auth/hooks/useAuth'
+import useAuth from "./features/auth/hooks/useAuth";
 import Login from "./features/auth/pages/Login";
 import Register from "./features/auth/pages/Register";
 import ForgotPassword from "./features/auth/pages/ForgotPassword";
 import Dashboard from "./features/dashboard/pages/Dashboard";
 import MyTasks from "./features/tasks/pages/MyTasks";
 import TaskDetails from "./features/tasks/pages/TaskDetails";
+import {
+  getTasks,
+  createTask,
+  updateTask,
+  deleteTask,
+  startTask,
+  completeTask,
+  reopenTask,
+} from "./features/tasks/api/tasks";
 import CreateEditTask from "./features/tasks/pages/CreateEditTask";
 import Categories from "./features/categories/pages/Categories";
 import Profile from "./features/user/pages/Profile";
@@ -24,39 +32,26 @@ import { getCurrentUser } from "./features/user/api/users";
 import { getCategories } from "./features/categories/api/categories";
 import useCategories from "./features/categories/hooks/useCategories";
 
-let taskIdCounter = 100;
-
 export default function App() {
   const [page, setPage] = useState("login");
   const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const today = new Date().toISOString().slice(0, 10);
+  const { toasts, showToast, removeToast } = useToast();
 
   const {
-  toasts,
-  showToast,
-  removeToast,
-} = useToast();
+    categories,
+    setCategories,
+    handleCreateCategory,
+    handleEditCategory,
+    handleDeleteCategory,
+  } = useCategories([], showToast);
 
-  const {
-  categories,
-  setCategories,
-  handleCreateCategory,
-  handleEditCategory,
-  handleDeleteCategory,
-} = useCategories([], showToast)
-
-  const {
-  isLoggedIn,
-  authLoading,
-  setAuthLoading,
-  completeLogin,
-  logout,
-} = useAuth()
+  const { isLoggedIn, authLoading, setAuthLoading, completeLogin, logout } =
+    useAuth();
 
   useEffect(() => {
     const restoreAuth = async () => {
@@ -70,15 +65,17 @@ export default function App() {
       try {
         const currentUser = await getCurrentUser();
         const userCategories = await getCategories();
+        const taskData = await getTasks();
 
         setUser(currentUser);
         setCategories(userCategories);
+        setTasks(taskData.items);
 
-        completeLogin()
+        completeLogin();
         setPage("dashboard");
       } catch {
         localStorage.removeItem("access_token");
-        logout()
+        logout();
         setPage("login");
       } finally {
         setAuthLoading(false);
@@ -92,22 +89,24 @@ export default function App() {
     try {
       const currentUser = await getCurrentUser();
       const userCategories = await getCategories();
+      const taskData = await getTasks();
 
       setUser(currentUser);
       setCategories(userCategories);
+      setTasks(taskData.items);
 
-      completeLogin()
+      completeLogin();
       setPage("dashboard");
     } catch {
       localStorage.removeItem("access_token");
-      logout()
+      logout();
       setPage("login");
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    logout()
+    logout();
     setPage("login");
   };
 
@@ -133,96 +132,108 @@ export default function App() {
     setEditingTaskId(id);
     setPage("edit-task");
   };
-  const handleStartTask = (taskId) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, status: "in_progress" } : task,
-      ),
-    );
-  };
-  const handleSaveTask = (data) => {
-    if (editingTaskId) {
+  const handleStartTask = async (taskId) => {
+    try {
+      const updatedTask = await startTask(taskId);
+
       setTasks((currentTasks) =>
-        currentTasks.map((task) =>
-          task.id === editingTaskId
-            ? {
-                ...task,
-                ...data,
-                completedAt:
-                  data.status === "completed"
-                    ? (task.completedAt ?? today)
-                    : undefined,
-              }
-            : task,
-        ),
+        currentTasks.map((task) => (task.id === taskId ? updatedTask : task)),
       );
 
-      showToast("Task updated!");
+      showToast("Task started!");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Failed to start task.";
 
-      setPage(selectedTaskId === editingTaskId ? "task-details" : "my-tasks");
-    } else {
-      const newTask = {
-        id: `t${++taskIdCounter}`,
-        ...data,
-        createdAt: today,
-        completedAt: data.status === "completed" ? today : undefined,
-      };
+      showToast(message, "error");
+    }
+  };
+  const handleSaveTask = async (data) => {
+    if (editingTaskId) {
+      try {
+        const updatedTask = await updateTask(editingTaskId, data);
+
+        setTasks((currentTasks) =>
+          currentTasks.map((task) =>
+            task.id === editingTaskId ? updatedTask : task,
+          ),
+        );
+
+        showToast("Task updated!");
+
+        setPage(selectedTaskId === editingTaskId ? "task-details" : "my-tasks");
+      } catch (error) {
+        const message =
+          error.response?.data?.detail || "Failed to update task.";
+
+        showToast(message, "error");
+      }
+
+      return;
+    }
+
+    try {
+      const newTask = await createTask(data);
 
       setTasks((currentTasks) => [newTask, ...currentTasks]);
 
       showToast("Task created! 🎉");
       setPage("my-tasks");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Failed to create task.";
+
+      showToast(message, "error");
     }
   };
 
-  const handleDeleteTask = (id) => {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+  const handleDeleteTask = async (id) => {
+    try {
+      await deleteTask(id);
 
-    if (page === "task-details") {
-      setPage("my-tasks");
+      setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
+
+      if (page === "task-details") {
+        setPage("my-tasks");
+      }
+
+      showToast("Task deleted.", "info");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Failed to delete task.";
+
+      showToast(message, "error");
     }
-
-    showToast("Task deleted.", "info");
   };
 
-  const handleCompleteTask = (id) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => {
-        if (task.id !== id) {
-          return task;
-        }
+  const handleCompleteTask = async (id) => {
+    try {
+      const updatedTask = await completeTask(id);
 
-        const completing = task.status !== "completed";
+      setTasks((currentTasks) =>
+        currentTasks.map((task) => (task.id === id ? updatedTask : task)),
+      );
 
-        return {
-          ...task,
-          status: completing ? "completed" : "todo",
-          completedAt: completing ? today : undefined,
-        };
-      }),
-    );
-
-    const task = tasks.find((task) => task.id === id);
-
-    if (task?.status !== "completed") {
       showToast("Task completed! 🎉");
+    } catch (error) {
+      const message =
+        error.response?.data?.detail || "Failed to complete task.";
+
+      showToast(message, "error");
     }
   };
 
-  const handleReopenTask = (id) => {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              status: "todo",
-              completedAt: undefined,
-            }
-          : task,
-      ),
-    );
+  const handleReopenTask = async (id) => {
+    try {
+      const updatedTask = await reopenTask(id);
 
-    showToast("Task reopened.", "info");
+      setTasks((currentTasks) =>
+        currentTasks.map((task) => (task.id === id ? updatedTask : task)),
+      );
+
+      showToast("Task reopened.", "info");
+    } catch (error) {
+      const message = error.response?.data?.detail || "Failed to reopen task.";
+
+      showToast(message, "error");
+    }
   };
 
   if (authLoading) {

@@ -46,8 +46,13 @@ export function PriorityBadge({ priority }) {
   )
 }
 
-export function StatusBadge({ status }) {
-  const c = statusCfg[status]
+export function StatusBadge({ status, isOverdue = false }) {
+  const displayStatus =
+    isOverdue && status !== 'completed'
+      ? 'overdue'
+      : status
+
+  const c = statusCfg[displayStatus]
 
   if (!c) return null
 

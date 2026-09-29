@@ -138,8 +138,6 @@ export default function MyTasks({
         }}
       />
 
-      {/* Status chips */}
-      <div className="my-tasks-status-list"></div>
 
       {/* Status chips */}
       <div className="my-tasks-status-list">
@@ -197,6 +195,7 @@ export default function MyTasks({
               <span>Task</span>
               <span>Category</span>
               <span>Priority</span>
+              <span>Status</span>
               <span>Due</span>
               <span>Actions</span>
             </div>

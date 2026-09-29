@@ -1,6 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
 
-
 import {
   CheckCircle2,
   Clock,
@@ -23,7 +22,6 @@ import CategoryOverview from "../components/CategoryOverview";
 import { weeklyData } from "../../../data";
 
 import "./Dashboard.css";
-const TODAY = "2026-09-03";
 
 export default function Dashboard({
   tasks,
@@ -43,6 +41,8 @@ export default function Dashboard({
     return () => clearTimeout(timer);
   }, []);
 
+  const today = new Date().toISOString().slice(0, 10);
+
   const total = tasks.length;
 
   const completed = tasks.filter((task) => task.status === "completed").length;
@@ -53,41 +53,27 @@ export default function Dashboard({
 
   const pending = tasks.filter((task) => task.status === "todo").length;
 
-  const overdue = tasks.filter((task) => task.status === "overdue").length;
+  const overdue = tasks.filter((task) => task.isOverdue).length;
 
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   const todaysTasks = tasks.filter(
-    (task) => task.dueDate === TODAY && task.status !== "completed",
+    (task) => task.dueDate === today && task.status !== "completed",
   );
 
-  const overdueTasks = tasks.filter((task) => task.status === "overdue");
+  const overdueTasks = tasks.filter((task) => task.isOverdue);
 
   const upcomingTasks = tasks
     .filter(
       (task) =>
-        task.dueDate > TODAY &&
+        task.dueDate &&
+        task.dueDate > today &&
         task.status !== "completed" &&
-        task.status !== "overdue",
+        !task.isOverdue,
     )
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 4);
 
-  console.log(
-  "Task category IDs:",
-  tasks.map((task) => ({
-    title: task.title,
-    categoryId: task.categoryId,
-  }))
-);
-
-console.log(
-  "Backend categories:",
-  categories.map((category) => ({
-    id: category.id,
-    name: category.name,
-  }))
-);
   const catData = useMemo(
     () =>
       categories

@@ -17,7 +17,19 @@ function Field({ label, error, children }) {
 
 const inputCls = (err) => `task-input ${err ? "task-input-error" : ""}`;
 
+function getTodayDate() {
+  const today = new Date();
+
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
 export default function CreateEditTask({ task, categories, onSave, onBack }) {
+  const today = getTodayDate();
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
   const [categoryId, setCategoryId] = useState(
@@ -37,8 +49,10 @@ export default function CreateEditTask({ task, categories, onSave, onBack }) {
     }
 
     if (!dueDate) {
-      validationErrors.dueDate = "Due date is required.";
-    }
+  validationErrors.dueDate = "Due date is required.";
+} else if (dueDate < today) {
+  validationErrors.dueDate = "Due date cannot be in the past.";
+}
 
     return validationErrors;
   };
@@ -99,10 +113,6 @@ export default function CreateEditTask({ task, categories, onSave, onBack }) {
       val: "completed",
       label: "Completed",
     },
-    {
-      val: "overdue",
-      label: "Overdue",
-    },
   ];
 
   return (
@@ -162,7 +172,7 @@ export default function CreateEditTask({ task, categories, onSave, onBack }) {
           <Field label="Category">
             <select
               value={categoryId}
-              onChange={(event) => setCategoryId(event.target.value)}
+              onChange={(event) => setCategoryId(Number(event.target.value))}
               className={`${inputCls()} task-select`}
             >
               {categories.map((category) => (
@@ -216,6 +226,7 @@ export default function CreateEditTask({ task, categories, onSave, onBack }) {
         <Field label="Due Date" error={errors.dueDate}>
           <input
             type="date"
+            min={today}
             value={dueDate}
             onChange={(event) => {
               setDueDate(event.target.value);

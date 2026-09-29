@@ -395,15 +395,18 @@
 .my-tasks-table-header,
 .my-tasks-desktop-row {
   display: grid;
+
   grid-template-columns:
-    auto
-    minmax(0, 1fr)
-    auto
-    auto
-    auto
-    auto;
+    24px
+    minmax(220px, 1fr)
+    90px
+    75px
+    90px
+    75px
+    90px;
+
   align-items: center;
-  column-gap: 16px;
+  column-gap: 12px;
 }
 
 .my-tasks-table-header {
@@ -519,7 +522,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s ease;
 }
 

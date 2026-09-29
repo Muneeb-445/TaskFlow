@@ -13,6 +13,19 @@ import {
   CategoryChip,
 } from '../../../shared/components/badges/badges'
 
+function formatDateOnly(dateString) {
+  if (!dateString) return 'No due date'
+
+  const [year, month, day] = dateString.split('-').map(Number)
+
+  return new Date(year, month - 1, day).toLocaleDateString(
+    'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  )
+} 
 export default function MobileTaskCard({
   task,
   cat,
@@ -22,7 +35,7 @@ export default function MobileTaskCard({
   onComplete,
 }) {
   const isDone = task.status === 'completed'
-  const isOverdue = task.status === 'overdue'
+const isOverdue = task.isOverdue
 
   return (
     <div
@@ -101,13 +114,7 @@ export default function MobileTaskCard({
 
             {isOverdue ? 'Overdue · ' : ''}
 
-            {new Date(task.dueDate).toLocaleDateString(
-              'en-US',
-              {
-                month: 'short',
-                day: 'numeric',
-              },
-            )}
+            {formatDateOnly(task.dueDate)}
           </span>
 
           <div className="my-tasks-mobile-actions">

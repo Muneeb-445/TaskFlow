@@ -5,12 +5,24 @@ import {
   Trash2,
   Eye,
   AlertCircle,
-} from 'lucide-react'
+} from "lucide-react";
 
 import {
   PriorityBadge,
+  StatusBadge,
   CategoryChip,
-} from '../../../shared/components/badges/badges'
+} from "../../../shared/components/badges/badges";
+
+function formatDateOnly(dateString) {
+  if (!dateString) return "No due date";
+
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
 
 export default function DesktopTaskRow({
   task,
@@ -20,13 +32,13 @@ export default function DesktopTaskRow({
   onDelete,
   onComplete,
 }) {
-  const isDone = task.status === 'completed'
-  const isOverdue = task.status === 'overdue'
+  const isDone = task.status === "completed";
+  const isOverdue = task.isOverdue;
 
   return (
     <div
       className={`my-tasks-desktop-row ${
-        isOverdue ? 'my-tasks-row-overdue' : ''
+        isOverdue ? "my-tasks-row-overdue" : ""
       }`}
     >
       <button
@@ -35,55 +47,39 @@ export default function DesktopTaskRow({
         className="my-tasks-complete-button"
       >
         {isDone ? (
-          <CheckCircle2
-            size={19}
-            className="my-tasks-completed-icon"
-          />
+          <CheckCircle2 size={19} className="my-tasks-completed-icon" />
         ) : (
-          <Circle
-            size={19}
-            className="my-tasks-circle-icon"
-          />
+          <Circle size={19} className="my-tasks-circle-icon" />
         )}
       </button>
 
       <div className="my-tasks-row-content">
         <p
           className={`my-tasks-row-title ${
-            isDone ? 'my-tasks-title-completed' : ''
+            isDone ? "my-tasks-title-completed" : ""
           }`}
         >
           {task.title}
         </p>
 
         {task.description && (
-          <p className="my-tasks-row-description">
-            {task.description}
-          </p>
+          <p className="my-tasks-row-description">{task.description}</p>
         )}
       </div>
 
-      <CategoryChip
-        name={cat.name}
-        color={cat.color}
-      />
+      <CategoryChip name={cat.name} color={cat.color} />
 
       <PriorityBadge priority={task.priority} />
+      <StatusBadge status={task.status} isOverdue={task.isOverdue} />
 
       <span
         className={`my-tasks-due-date ${
-          isOverdue ? 'my-tasks-due-overdue' : ''
+          isOverdue ? "my-tasks-due-overdue" : ""
         }`}
       >
         {isOverdue && <AlertCircle size={12} />}
 
-        {new Date(task.dueDate).toLocaleDateString(
-          'en-US',
-          {
-            month: 'short',
-            day: 'numeric',
-          },
-        )}
+        {formatDateOnly(task.dueDate)}
       </span>
 
       <div className="my-tasks-row-actions">
@@ -109,15 +105,10 @@ export default function DesktopTaskRow({
         />
       </div>
     </div>
-  )
+  );
 }
 
-function ActionBtn({
-  icon: Icon,
-  title,
-  onClick,
-  hoverCls,
-}) {
+function ActionBtn({ icon: Icon, title, onClick, hoverCls }) {
   return (
     <button
       type="button"
@@ -127,5 +118,5 @@ function ActionBtn({
     >
       <Icon size={14} />
     </button>
-  )
+  );
 }

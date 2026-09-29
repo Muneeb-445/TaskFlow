@@ -12,7 +12,11 @@ import {
   AlignLeft,
 } from "lucide-react";
 
-import { PriorityBadge, StatusBadge, CategoryChip } from "../../../shared/components/badges/badges";
+import {
+  PriorityBadge,
+  StatusBadge,
+  CategoryChip,
+} from "../../../shared/components/badges/badges";
 
 import "./TaskDetails.css";
 
@@ -27,6 +31,20 @@ function MetaField({ icon, label, value, valueClass = "text-[#0F0F14]" }) {
       <p className={`task-details-meta-value ${valueClass}`}>{value}</p>
     </div>
   );
+}
+
+function formatDateOnly(dateString) {
+  if (!dateString) {
+    return "No due date";
+  }
+
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 export default function TaskDetails({
@@ -47,13 +65,9 @@ export default function TaskDetails({
   };
 
   const isDone = task.status === "completed";
-  const isOverdue = task.status === "overdue";
+  const isOverdue = task.isOverdue;
 
-  const formattedDueDate = new Date(task.dueDate).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedDueDate = formatDateOnly(task.dueDate);
 
   const formattedCreatedDate = new Date(task.createdAt).toLocaleDateString(
     "en-US",
@@ -145,7 +159,7 @@ export default function TaskDetails({
               </h1>
 
               <div className="task-details-badges">
-                <StatusBadge status={task.status} />
+                <StatusBadge status={task.status} isOverdue={task.isOverdue} />
 
                 <PriorityBadge priority={task.priority} />
 
@@ -243,7 +257,7 @@ export default function TaskDetails({
               Edit Task
             </button>
 
-            {(task.status === "todo" || task.status === "overdue") && (
+            {task.status === "todo" && (
               <button
                 type="button"
                 onClick={onStart}
