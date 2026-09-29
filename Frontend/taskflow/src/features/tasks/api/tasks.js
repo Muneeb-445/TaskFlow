@@ -1,6 +1,6 @@
 import api from '../../../shared/api/client'
 
-function mapTask(task) {
+export function mapTask(task) {
   return {
     id: task.id,
     title: task.title,

@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   CheckCircle2,
@@ -11,6 +11,8 @@ import {
   Zap,
 } from "lucide-react";
 
+import { getDashboard } from "../api/dashboard";
+import { mapTask } from "../../tasks/api/tasks";
 import { DashboardSkeleton } from "../../../shared/components/Skeleton/Skeleton";
 import StatCard from "../components/StatCard";
 import StreakBar from "../components/StreakBar";
@@ -19,12 +21,9 @@ import WeeklyActivity from "../components/WeeklyActivity";
 import TaskSection from "../components/TaskSection";
 import CategoryOverview from "../components/CategoryOverview";
 
-import { weeklyData } from "../../../data";
-
 import "./Dashboard.css";
 
 export default function Dashboard({
-  tasks,
   categories,
   user,
   onNav,
@@ -32,66 +31,44 @@ export default function Dashboard({
   onCreateTask,
 }) {
   const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 600);
+    async function loadDashboard() {
+      try {
+        const data = await getDashboard();
+        setDashboardData(data);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    return () => clearTimeout(timer);
+    loadDashboard();
   }, []);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const total = dashboardData?.total_tasks ?? 0;
+  const completed = dashboardData?.completed_tasks ?? 0;
+  const inProgress = dashboardData?.in_progress_tasks ?? 0;
+  const pending = dashboardData?.pending_tasks ?? 0;
+  const overdue = dashboardData?.overdue_tasks ?? 0;
+  const pct = dashboardData?.completion_percentage ?? 0;
 
-  const total = tasks.length;
+  const todaysTasks = (dashboardData?.due_today ?? []).map(mapTask);
+  const overdueTasks = (dashboardData?.overdue_tasks_list ?? []).map(mapTask);
+  const upcomingTasks = (dashboardData?.upcoming_tasks ?? []).map(mapTask);
 
-  const completed = tasks.filter((task) => task.status === "completed").length;
+  const catData = (dashboardData?.category_statistics ?? []).map((stat) => {
+    const category = categories.find((category) => category.id === stat.id);
 
-  const inProgress = tasks.filter(
-    (task) => task.status === "in_progress",
-  ).length;
-
-  const pending = tasks.filter((task) => task.status === "todo").length;
-
-  const overdue = tasks.filter((task) => task.isOverdue).length;
-
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  const todaysTasks = tasks.filter(
-    (task) => task.dueDate === today && task.status !== "completed",
-  );
-
-  const overdueTasks = tasks.filter((task) => task.isOverdue);
-
-  const upcomingTasks = tasks
-    .filter(
-      (task) =>
-        task.dueDate &&
-        task.dueDate > today &&
-        task.status !== "completed" &&
-        !task.isOverdue,
-    )
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
-    .slice(0, 4);
-
-  const catData = useMemo(
-    () =>
-      categories
-        .map((category) => {
-          const catTasks = tasks.filter(
-            (task) => task.categoryId === category.id,
-          );
-
-          return {
-            name: category.name,
-            value: catTasks.length,
-            color: category.color,
-            done: catTasks.filter((task) => task.status === "completed").length,
-          };
-        })
-        .filter((category) => category.value > 0),
-    [tasks, categories],
-  );
+    return {
+      name: stat.name,
+      value: stat.task_count,
+      done: stat.completed_count,
+      color: category?.color || "#9CA3AF",
+    };
+  });
 
   const hour = new Date().getHours();
 
@@ -198,8 +175,7 @@ export default function Dashboard({
         />
 
         {/* Weekly Activity */}
-        <WeeklyActivity weeklyData={weeklyData} />
-
+        <WeeklyActivity weeklyData={dashboardData?.weekly_productivity ?? []} />
         {/* Streak */}
         <div className="dashboard-streak-wrapper">
           <StreakBar streak={5} />

@@ -292,7 +292,6 @@ export default function App() {
           <ErrorBoundary onReset={() => setPage("dashboard")}>
             {page === "dashboard" && (
               <Dashboard
-                tasks={tasks}
                 categories={categories}
                 user={user}
                 onNav={handleNav}
