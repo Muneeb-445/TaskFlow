@@ -30,7 +30,7 @@ class TaskResponse(BaseModel):
     description: str | None
     status: TaskStatus
     priority: TaskPriority
-    due_date: datetime | None
+    due_date: date | None
     created_at: datetime
     completed_at: datetime | None
     category_id: int | None

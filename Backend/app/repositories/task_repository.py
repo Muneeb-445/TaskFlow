@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timezone
+from datetime import date
 
 from sqlalchemy import and_, case, func, or_
 from sqlalchemy.orm import Session
@@ -64,14 +64,14 @@ class TaskRepository:
         self._db.commit()
 
     def get_status_counts(self, user_id: int) -> dict:
-        now = datetime.now(timezone.utc)
+        today = date.today()   # CHANGED
 
         pending = func.sum(case((Task.status == TaskStatus.TODO, 1), else_=0))
         in_progress = func.sum(case((Task.status == TaskStatus.IN_PROGRESS, 1), else_=0))
         completed = func.sum(case((Task.status == TaskStatus.COMPLETED, 1), else_=0))
         overdue = func.sum(
             case(
-                (and_(Task.due_date < now, Task.status != TaskStatus.COMPLETED), 1),
+                (and_(Task.due_date < today, Task.status != TaskStatus.COMPLETED), 1),  # CHANGED
                 else_=0,
             )
         )
@@ -121,9 +121,7 @@ class TaskRepository:
         if category_id is not None:
             query = query.filter(Task.category_id == category_id)
         if due_date is not None:
-            start_of_day = datetime.combine(due_date, time.min, tzinfo=timezone.utc)
-            end_of_day = datetime.combine(due_date, time.max, tzinfo=timezone.utc)
-            query = query.filter(Task.due_date >= start_of_day, Task.due_date <= end_of_day)
+            query = query.filter(Task.due_date == due_date)   # CHANGED
 
         total = query.count()
 

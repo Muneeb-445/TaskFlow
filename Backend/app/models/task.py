@@ -1,5 +1,6 @@
 import enum
-from datetime import datetime
+from datetime import date,datetime
+from sqlalchemy import Date  
 
 from sqlalchemy import (
     BigInteger,
@@ -62,7 +63,7 @@ class Task(Base):
         default=TaskPriority.MEDIUM,
         index=True,
     )
-    due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

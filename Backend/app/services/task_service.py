@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -15,7 +15,7 @@ def build_task_response(task: Task, category_name: str | None) -> TaskResponse:
     so overdue logic is defined exactly once."""
     is_overdue = (
         task.due_date is not None
-        and task.due_date < datetime.now(timezone.utc)
+        and task.due_date < date.today()          # CHANGED: date vs date
         and task.status != TaskStatus.COMPLETED
     )
 
@@ -114,7 +114,7 @@ class TaskService:
             description=data.description,
             category_id=data.category_id,
             priority=data.priority,
-            due_date=self._to_end_of_day(data.due_date),
+            due_date=data.due_date,               # CHANGED: stored as-is
         )
         return build_task_response(task, self._category_name(task))
 
@@ -126,8 +126,7 @@ class TaskService:
         if "category_id" in provided_fields and provided_fields["category_id"] is not None:
             self._validate_category_ownership(provided_fields["category_id"], user_id)
 
-        if "due_date" in provided_fields and provided_fields["due_date"] is not None:
-            provided_fields["due_date"] = self._to_end_of_day(provided_fields["due_date"])
+        # CHANGED: the due_date conversion block is deleted; the date passes straight through
 
         task = self._repository.update(task, **provided_fields)
         return build_task_response(task, self._category_name(task))

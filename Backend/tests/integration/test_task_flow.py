@@ -499,5 +499,41 @@ class TestSortValidation:
         response = client.get("/api/v1/tasks?sort_order=upsidedown", headers=user_a["headers"])
         assert response.status_code == 422
 
+class TestDueDateIsCalendarDate:
+    def test_due_date_round_trips_exactly(self, user_a):
+        created = client.post(
+            "/api/v1/tasks",
+            headers=user_a["headers"],
+            json={"title": "Calendar date", "due_date": "2026-09-29"},
+        ).json()
+        assert created["due_date"] == "2026-09-29"
+
+        fetched = client.get(f"/api/v1/tasks/{created['id']}", headers=user_a["headers"]).json()
+        assert fetched["due_date"] == "2026-09-29"
+
+    def test_repeated_edits_do_not_shift_the_date(self, user_a):
+        task = _create_task(user_a["headers"], due_date="2026-09-29")
+        current = task["due_date"]
+
+        # Simulate the frontend edit loop: send back whatever it received
+        for _ in range(3):
+            response = client.patch(
+                f"/api/v1/tasks/{task['id']}",
+                headers=user_a["headers"],
+                json={"due_date": current},
+            )
+            current = response.json()["due_date"]
+
+        assert current == "2026-09-29"
+
+    def test_task_due_today_is_not_overdue(self, user_a):
+        task = _create_task(user_a["headers"], due_date=date.today().isoformat())
+        assert task["is_overdue"] is False
+
+    def test_task_due_yesterday_is_overdue(self, user_a):
+        yesterday = (date.today() - timedelta(days=1)).isoformat()
+        task = _create_task(user_a["headers"], due_date=yesterday)
+        assert task["is_overdue"] is True
+
 # command to run this test file:
 # pytest tests/integration/test_task_flow.py -v

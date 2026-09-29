@@ -31,17 +31,12 @@ class DashboardRepository:
         )
 
     def get_due_today(self, user_id: int) -> list[tuple[Task, str | None]]:
-        today = date.today()
-        start = datetime.combine(today, time.min, tzinfo=timezone.utc)
-        end = datetime.combine(today, time.max, tzinfo=timezone.utc)
-
         return (
             self._db.query(Task, Category.name)
             .outerjoin(Category, Task.category_id == Category.id)
             .filter(
                 Task.user_id == user_id,
-                Task.due_date >= start,
-                Task.due_date <= end,
+                Task.due_date == date.today(),
                 Task.status != TaskStatus.COMPLETED,
             )
             .order_by(self._priority_rank().asc(), Task.created_at.asc())
@@ -49,17 +44,13 @@ class DashboardRepository:
         )
 
     def get_upcoming(self, user_id: int, limit: int = 4) -> list[tuple[Task, str | None]]:
-        tomorrow_start = datetime.combine(
-            date.today() + timedelta(days=1), time.min, tzinfo=timezone.utc
-        )
-
         return (
             self._db.query(Task, Category.name)
             .outerjoin(Category, Task.category_id == Category.id)
             .filter(
                 Task.user_id == user_id,
                 Task.due_date.isnot(None),
-                Task.due_date >= tomorrow_start,
+                Task.due_date > date.today(),
                 Task.status != TaskStatus.COMPLETED,
             )
             .order_by(Task.due_date.asc())
@@ -68,15 +59,13 @@ class DashboardRepository:
         )
 
     def get_overdue_list(self, user_id: int) -> list[tuple[Task, str | None]]:
-        now = datetime.now(timezone.utc)
-
         return (
             self._db.query(Task, Category.name)
             .outerjoin(Category, Task.category_id == Category.id)
             .filter(
                 Task.user_id == user_id,
                 Task.due_date.isnot(None),
-                Task.due_date < now,
+                Task.due_date < date.today(),
                 Task.status != TaskStatus.COMPLETED,
             )
             .order_by(Task.due_date.asc(), self._priority_rank().asc())
