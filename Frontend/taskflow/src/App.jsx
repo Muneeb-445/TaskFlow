@@ -39,6 +39,10 @@ export default function App() {
   const [selectedTaskId, setSelectedTaskId] = useState(null);
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [taskStatusFilter, setTaskStatusFilter] = useState("all");
+  const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
+  const [taskCategoryFilter, setTaskCategoryFilter] = useState("all");
+  const [taskSortField, setTaskSortField] = useState("dueDate");
 
   const { toasts, showToast, removeToast } = useToast();
 
@@ -309,6 +313,14 @@ export default function App() {
                 onCompleteTask={handleCompleteTask}
                 searchQuery={searchQuery}
                 onSearch={setSearchQuery}
+                statusFilter={taskStatusFilter}
+                onStatusFilterChange={setTaskStatusFilter}
+                priorityFilter={taskPriorityFilter}
+                onPriorityFilterChange={setTaskPriorityFilter}
+                categoryFilter={taskCategoryFilter}
+                onCategoryFilterChange={setTaskCategoryFilter}
+                sortField={taskSortField}
+                onSortFieldChange={setTaskSortField}
               />
             )}
 

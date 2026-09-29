@@ -71,12 +71,16 @@ export function CategoryChip({ name, color }) {
         backgroundColor: `${color}18`,
         color,
       }}
+      title={name}
     >
       <span
         className="category-chip-dot"
         style={{ backgroundColor: color }}
       />
-      {name}
+
+      <span className="category-chip-name">
+        {name}
+      </span>
     </span>
   )
 }

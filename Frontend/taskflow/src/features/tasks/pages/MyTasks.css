@@ -396,14 +396,14 @@
 .my-tasks-desktop-row {
   display: grid;
 
-  grid-template-columns:
-    24px
-    minmax(220px, 1fr)
-    90px
-    75px
-    90px
-    75px
-    90px;
+grid-template-columns:
+  24px
+  minmax(200px, 1fr)
+  110px
+  75px
+  90px
+  75px
+  90px;
 
   align-items: center;
   column-gap: 12px;

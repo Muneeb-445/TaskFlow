@@ -21,6 +21,17 @@ const priorityOrder = {
   medium: 1,
   low: 2,
 };
+function matchesStatusFilter(task, filter) {
+  if (filter === "all") {
+    return true;
+  }
+
+  if (filter === "overdue") {
+    return task.isOverdue && task.status !== "completed";
+  }
+
+  return task.status === filter;
+}
 
 export default function MyTasks({
   tasks,
@@ -32,11 +43,15 @@ export default function MyTasks({
   onCompleteTask,
   searchQuery,
   onSearch,
+  statusFilter,
+  onStatusFilterChange,
+  priorityFilter,
+  onPriorityFilterChange,
+  categoryFilter,
+  onCategoryFilterChange,
+  sortField,
+  onSortFieldChange,
 }) {
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [priorityFilter, setPriorityFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [sortField, setSortField] = useState("dueDate");
   const [showFilters, setShowFilters] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
@@ -49,18 +64,19 @@ export default function MyTasks({
   const filtered = useMemo(() => {
     let list = [...tasks];
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (searchQuery.trim()) {
+      const query = searchQuery.trim().toLowerCase();
 
-      list = list.filter(
-        (task) =>
-          task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query),
-      );
+      list = list.filter((task) => {
+        const title = task.title?.toLowerCase() || "";
+        const description = task.description?.toLowerCase() || "";
+
+        return title.includes(query) || description.includes(query);
+      });
     }
 
     if (statusFilter !== "all") {
-      list = list.filter((task) => task.status === statusFilter);
+      list = list.filter((task) => matchesStatusFilter(task, statusFilter));
     }
 
     if (priorityFilter !== "all") {
@@ -126,26 +142,24 @@ export default function MyTasks({
         onToggleFilters={() => setShowFilters((current) => !current)}
         activeFilterCount={activeFilterCount}
         priorityFilter={priorityFilter}
-        onPriorityChange={setPriorityFilter}
+        onPriorityChange={onPriorityFilterChange}
         categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
+        onCategoryChange={onCategoryFilterChange}
         categories={categories}
         sortField={sortField}
-        onSortChange={setSortField}
+        onSortChange={onSortFieldChange}
         onClearFilters={() => {
-          setPriorityFilter("all");
-          setCategoryFilter("all");
+          onPriorityFilterChange("all");
+          onCategoryFilterChange("all");
         }}
       />
-
 
       {/* Status chips */}
       <div className="my-tasks-status-list">
         {statusFilters.map(({ key, label }) => {
-          const count =
-            key === "all"
-              ? tasks.length
-              : tasks.filter((task) => task.status === key).length;
+          const count = tasks.filter((task) =>
+            matchesStatusFilter(task, key),
+          ).length;
 
           const active = statusFilter === key;
 
@@ -153,7 +167,7 @@ export default function MyTasks({
             <button
               type="button"
               key={key}
-              onClick={() => setStatusFilter(key)}
+              onClick={() => onStatusFilterChange(key)}
               className={`my-tasks-status-chip ${
                 active ? "my-tasks-status-active" : ""
               }`}
