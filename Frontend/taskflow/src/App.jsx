@@ -365,7 +365,6 @@ export default function App() {
                 user={user}
                 onSave={(updatedUser) => {
                   setUser(updatedUser);
-                  showToast("Profile saved!");
                 }}
                 showToast={showToast}
               />

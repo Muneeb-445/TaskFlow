@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useState } from "react";
+import { updateCurrentUser, changePassword } from "../api/users";
+
 import {
   User,
   Mail,
@@ -7,82 +9,104 @@ import {
   CheckCircle,
   Eye,
   EyeOff,
-} from 'lucide-react'
+} from "lucide-react";
 
-import './Profile.css'
+import "./Profile.css";
 
 function checkPassword(password) {
   return {
     length: password.length >= 8,
     upper: /[A-Z]/.test(password),
     number: /\d/.test(password),
-  }
+    special: /[^A-Za-z0-9]/.test(password),
+  };
 }
 
 export default function Profile({ user, onSave, showToast }) {
-  const [name, setName] = useState(user.fullname)
-  const [email, setEmail] = useState(user.email)
-  const [bio, setBio] = useState(user.bio)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
+  const [name, setName] = useState(user.fullname);
+  const [email] = useState(user.email);
+  const [bio, setBio] = useState(user.bio);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  const [curPass, setCurPass] = useState('')
-  const [newPass, setNewPass] = useState('')
-  const [showCur, setShowCur] = useState(false)
-  const [showNew, setShowNew] = useState(false)
-  const [passErr, setPassErr] = useState('')
-  const [passSaved, setPassSaved] = useState(false)
+  const [curPass, setCurPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [showCur, setShowCur] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [passErr, setPassErr] = useState("");
+  const [passSaved, setPassSaved] = useState(false);
 
-  const checks = checkPassword(newPass)
+  const checks = checkPassword(newPass);
 
   const initials = name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
-    .slice(0, 2)
+    .slice(0, 2);
 
-  const handleSave = (e) => {
-    e.preventDefault()
+  const handleSave = async (e) => {
+    e.preventDefault();
 
-    setSaving(true)
+    setSaving(true);
 
-    setTimeout(() => {
-      onSave({ name, email, bio })
-      setSaving(false)
-      setSaved(true)
+    try {
+      const updatedUser = await updateCurrentUser({
+        fullname: name,
+        bio: bio || null,
+      });
 
-      showToast('Profile updated successfully!', 'success')
+      onSave(updatedUser);
+      setSaved(true);
 
-      setTimeout(() => setSaved(false), 2000)
-    }, 700)
-  }
+      showToast("Profile updated successfully!", "success");
 
-  const handlePassChange = (e) => {
-    e.preventDefault()
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      const message =
+        error.response?.data?.detail || "Failed to update profile.";
+
+      showToast(message, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePassChange = async (e) => {
+    e.preventDefault();
 
     if (!curPass) {
-      setPassErr('Enter your current password.')
-      return
+      setPassErr("Enter your current password.");
+      return;
     }
 
     if (!Object.values(checks).every(Boolean)) {
-      setPassErr('New password does not meet requirements.')
-      return
+      setPassErr("New password does not meet requirements.");
+      return;
     }
 
-    setPassErr('')
+    setPassErr("");
 
-    setTimeout(() => {
-      setPassSaved(true)
-      setCurPass('')
-      setNewPass('')
+    try {
+      await changePassword({
+        current_password: curPass,
+        new_password: newPass,
+      });
 
-      showToast('Password changed successfully!', 'success')
+      setPassSaved(true);
+      setCurPass("");
+      setNewPass("");
 
-      setTimeout(() => setPassSaved(false), 2000)
-    }, 700)
-  }
+      showToast("Password changed successfully!", "success");
+
+      setTimeout(() => setPassSaved(false), 2000);
+    } catch (error) {
+      const message =
+        error.response?.data?.detail || "Failed to change password.";
+
+      setPassErr(message);
+    }
+  };
 
   return (
     <div className="profile-page fade-in">
@@ -96,9 +120,7 @@ export default function Profile({ user, onSave, showToast }) {
         {/* Avatar */}
         <div className="profile-avatar-section">
           <div className="profile-avatar-wrapper">
-            <div className="profile-avatar">
-              {initials}
-            </div>
+            <div className="profile-avatar">{initials}</div>
 
             <button
               type="button"
@@ -125,10 +147,7 @@ export default function Profile({ user, onSave, showToast }) {
                 </span>
               </label>
 
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
             <div className="profile-field">
@@ -139,11 +158,7 @@ export default function Profile({ user, onSave, showToast }) {
                 </span>
               </label>
 
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <input type="email" value={email} readOnly />
             </div>
           </div>
 
@@ -176,7 +191,7 @@ export default function Profile({ user, onSave, showToast }) {
                 Saved!
               </>
             ) : (
-              'Save Changes'
+              "Save Changes"
             )}
           </button>
         </form>
@@ -192,7 +207,7 @@ export default function Profile({ user, onSave, showToast }) {
 
             <div className="password-input-wrapper">
               <input
-                type={showCur ? 'text' : 'password'}
+                type={showCur ? "text" : "password"}
                 value={curPass}
                 onChange={(e) => setCurPass(e.target.value)}
                 placeholder="••••••••"
@@ -202,7 +217,7 @@ export default function Profile({ user, onSave, showToast }) {
                 type="button"
                 onClick={() => setShowCur((current) => !current)}
                 className="password-toggle"
-                aria-label={showCur ? 'Hide password' : 'Show password'}
+                aria-label={showCur ? "Hide password" : "Show password"}
               >
                 {showCur ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -214,7 +229,7 @@ export default function Profile({ user, onSave, showToast }) {
 
             <div className="password-input-wrapper">
               <input
-                type={showNew ? 'text' : 'password'}
+                type={showNew ? "text" : "password"}
                 value={newPass}
                 onChange={(e) => setNewPass(e.target.value)}
                 placeholder="Create a strong password"
@@ -224,7 +239,7 @@ export default function Profile({ user, onSave, showToast }) {
                 type="button"
                 onClick={() => setShowNew((current) => !current)}
                 className="password-toggle"
-                aria-label={showNew ? 'Hide password' : 'Show password'}
+                aria-label={showNew ? "Hide password" : "Show password"}
               >
                 {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -233,14 +248,15 @@ export default function Profile({ user, onSave, showToast }) {
             {newPass && (
               <div className="password-checks">
                 {[
-                  { ok: checks.length, label: '8+ chars' },
-                  { ok: checks.upper, label: 'Uppercase' },
-                  { ok: checks.number, label: 'Number' },
+                  { ok: checks.length, label: "8+ chars" },
+                  { ok: checks.upper, label: "Uppercase" },
+                  { ok: checks.number, label: "Number" },
+                  { ok: checks.special, label: "Special character" },
                 ].map(({ ok, label }) => (
                   <span
                     key={label}
                     className={`password-check ${
-                      ok ? 'password-check-valid' : ''
+                      ok ? "password-check-valid" : ""
                     }`}
                   >
                     <CheckCircle size={11} />
@@ -260,11 +276,11 @@ export default function Profile({ user, onSave, showToast }) {
                 Changed!
               </>
             ) : (
-              'Update Password'
+              "Update Password"
             )}
           </button>
         </form>
       </div>
     </div>
-  )
+  );
 }

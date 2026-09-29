@@ -5,3 +5,13 @@ export async function getCurrentUser() {
 
   return response.data
 }
+
+export async function updateCurrentUser(userData) {
+  const response = await api.patch('/users/me', userData)
+  return response.data
+}
+
+export async function changePassword(passwordData) {
+  const response = await api.patch('/users/me/password', passwordData)
+  return response.data
+}
