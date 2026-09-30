@@ -17,3 +17,7 @@ class ForbiddenError(AppError):
 
 class InvalidCredentialsError(AppError):
     """Raised on failed login (wrong email/password, or inactive account)."""
+    
+class ValidationError(AppError):
+    """Raised for request-content validation failures that aren't
+    covered by Pydantic (e.g. file type/size checks on an upload)."""

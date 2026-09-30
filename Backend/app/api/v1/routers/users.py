@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, File, UploadFile, status
 
 from app.dependencies.auth import get_current_user
 from app.dependencies.database import get_db
@@ -31,3 +32,20 @@ def change_my_password(
     db: Session = Depends(get_db),
 ):
     UserService(db).change_password(current_user, data)
+    
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    raw_bytes = await file.read()
+    return UserService(db).upload_avatar(current_user, raw_bytes, file.content_type)
+
+
+@router.delete("/me/avatar", response_model=UserResponse)
+def remove_avatar(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return UserService(db).remove_avatar(current_user)

@@ -39,7 +39,6 @@ class UserLogin(BaseModel):
 class UserUpdate(BaseModel):
     fullname: str | None = Field(default=None, min_length=1, max_length=255)
     bio: str | None = None
-    avatar_url: str | None = Field(default=None, max_length=255)
 
 
 class ChangePasswordRequest(BaseModel):

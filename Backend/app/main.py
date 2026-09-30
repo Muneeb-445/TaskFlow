@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.v1.routers import auth, users, categories,tasks,dashboard
 from app.core.config import settings
-from app.core.exceptions import ConflictError, ForbiddenError, InvalidCredentialsError, NotFoundError
+from app.core.exceptions import ConflictError, ValidationError, ForbiddenError, InvalidCredentialsError, NotFoundError
 
 
 def create_app() -> FastAPI:
@@ -12,6 +13,8 @@ def create_app() -> FastAPI:
         title=settings.project_name,
         openapi_url=f"{settings.api_v1_prefix}/openapi.json",
     )
+    
+    app.mount("/static/avatars", StaticFiles(directory=settings.UPLOAD_DIR), name="avatars")
 
     if settings.backend_cors_origins:
         app.add_middleware(
@@ -37,6 +40,10 @@ def create_app() -> FastAPI:
     @app.exception_handler(ForbiddenError)
     async def forbidden_handler(request: Request, exc: ForbiddenError):
         return JSONResponse(status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)})
+    
+    @app.exception_handler(ValidationError)
+    async def validation_error_handler(request: Request, exc: ValidationError):
+        return JSONResponse(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, content={"detail": str(exc)})
 
     app.include_router(auth.router, prefix=settings.api_v1_prefix)
     app.include_router(users.router, prefix=settings.api_v1_prefix)

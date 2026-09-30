@@ -6,7 +6,11 @@ class Settings(BaseSettings):
     database_url: str
     secret_key: str                       
     algorithm: str                         
-    access_token_expire_minutes: int  
+    access_token_expire_minutes: int
+    
+    UPLOAD_DIR: str = "uploads/avatars"
+    MAX_AVATAR_SIZE_BYTES: int = 5 * 1024 * 1024  # 5 MB
+    AVATAR_URL_PREFIX: str = "/static/avatars"
     
     project_name: str = "TaskFlow"                    
     api_v1_prefix: str = "/api/v1"                     

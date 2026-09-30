@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from app.core.avatar_storage import avatar_storage
 
 from app.core.exceptions import ConflictError, InvalidCredentialsError
 from app.core.security import password_hasher
@@ -19,7 +20,6 @@ class UserService:
             current_user,
             fullname=data.fullname,
             bio=data.bio,
-            avatar_url=data.avatar_url,
         )
 
     def change_password(self, current_user: User, data: ChangePasswordRequest) -> User:
@@ -31,3 +31,20 @@ class UserService:
 
         new_password_hash = password_hasher.hash(data.new_password)
         return self._repository.update_password(current_user, new_password_hash=new_password_hash)
+    
+    def upload_avatar(self, current_user: User, raw_bytes: bytes, content_type: str) -> User:
+        processed_bytes = avatar_storage.validate_and_process(raw_bytes, content_type)
+
+        old_avatar_url = current_user.avatar_url
+        new_avatar_url = avatar_storage.save(processed_bytes)
+
+        updated_user = self._repository.set_avatar_url(current_user, new_avatar_url)
+        avatar_storage.delete_by_url(old_avatar_url)
+
+        return updated_user
+
+    def remove_avatar(self, current_user: User) -> User:
+        old_avatar_url = current_user.avatar_url
+        updated_user = self._repository.set_avatar_url(current_user, None)
+        avatar_storage.delete_by_url(old_avatar_url)
+        return updated_user

@@ -54,3 +54,9 @@ class UserRepository:
         self._db.commit()
         self._db.refresh(user)
         return user
+    
+    def set_avatar_url(self, user: User, avatar_url: str | None) -> User:
+        user.avatar_url = avatar_url
+        self._db.commit()
+        self._db.refresh(user)
+        return user
