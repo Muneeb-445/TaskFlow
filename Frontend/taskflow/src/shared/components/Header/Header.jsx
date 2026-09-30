@@ -105,7 +105,15 @@ export default function Header({
             onClick={handleAvatarToggle}
             className="avatar-button"
           >
-            <div className="avatar-circle">{initials}</div>
+            {user.avatar_url ? (
+              <img
+                src={`http://127.0.0.1:8000${user.avatar_url}`}
+                alt="Profile"
+                className="avatar-circle avatar-image"
+              />
+            ) : (
+              <div className="avatar-circle">{initials}</div>
+            )}
 
             <span className="avatar-name">{user.fullname.split(" ")[0]}</span>
 

@@ -331,3 +331,8 @@
   background: #f3f4f6;
   color: #4b5563;
 }
+
+.avatar-image {
+  object-fit: cover;
+  display: block;
+}

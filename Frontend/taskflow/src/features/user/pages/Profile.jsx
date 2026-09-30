@@ -1,14 +1,21 @@
-import { useState } from "react";
-import { updateCurrentUser, changePassword } from "../api/users";
+import { useRef, useState } from "react";
+import {
+  updateCurrentUser,
+  changePassword,
+  uploadAvatar,
+  removeAvatar,
+} from "../api/users";
 
 import {
   User,
   Mail,
   FileText,
   Camera,
+  Trash2,
   CheckCircle,
   Eye,
   EyeOff,
+  X,
 } from "lucide-react";
 
 import "./Profile.css";
@@ -23,6 +30,11 @@ function checkPassword(password) {
 }
 
 export default function Profile({ user, onSave, showToast }) {
+  const fileInputRef = useRef(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarRemoving, setAvatarRemoving] = useState(false);
+  const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
+
   const [name, setName] = useState(user.fullname);
   const [email] = useState(user.email);
   const [bio, setBio] = useState(user.bio);
@@ -44,6 +56,53 @@ export default function Profile({ user, onSave, showToast }) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    setAvatarUploading(true);
+
+    try {
+      const updatedUser = await uploadAvatar(file);
+
+      onSave(updatedUser);
+
+      showToast("Profile picture updated successfully!", "success");
+    } catch (error) {
+      const message =
+        error.response?.data?.detail || "Failed to upload profile picture.";
+
+      showToast(message, "error");
+    } finally {
+      setAvatarUploading(false);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+  const handleAvatarRemove = async () => {
+    setAvatarRemoving(true);
+
+    try {
+      const updatedUser = await removeAvatar();
+
+      onSave(updatedUser);
+
+      showToast("Profile picture removed successfully!", "success");
+    } catch (error) {
+      const message =
+        error.response?.data?.detail || "Failed to remove profile picture.";
+
+      showToast(message, "error");
+    } finally {
+      setAvatarRemoving(false);
+    }
+  };
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -116,19 +175,69 @@ export default function Profile({ user, onSave, showToast }) {
       </div>
 
       {/* Profile card */}
-      <div className="profile-card">
+      <div
+        className={`profile-card ${
+          avatarPreviewOpen ? "profile-card-preview-active" : ""
+        }`}
+      >
         {/* Avatar */}
         <div className="profile-avatar-section">
           <div className="profile-avatar-wrapper">
-            <div className="profile-avatar">{initials}</div>
+            {user.avatar_url ? (
+              <button
+                type="button"
+                className="profile-avatar-preview-button"
+                onClick={() => setAvatarPreviewOpen(true)}
+                aria-label="View profile picture"
+              >
+                <img
+                  src={`http://127.0.0.1:8000${user.avatar_url}`}
+                  alt="Profile"
+                  className="profile-avatar profile-avatar-image"
+                />
+              </button>
+            ) : (
+              <div className="profile-avatar">{initials}</div>
+            )}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarChange}
+              hidden
+            />
 
             <button
               type="button"
               className="profile-camera-button"
               aria-label="Change profile picture"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={avatarUploading || avatarRemoving}
             >
-              <Camera size={10} />
+              {avatarUploading ? (
+                <span className="profile-spinner" />
+              ) : (
+                <Camera size={10} />
+              )}
             </button>
+
+            {user.avatar_url && (
+              <button
+                type="button"
+                className="profile-remove-avatar-button"
+                onClick={handleAvatarRemove}
+                disabled={avatarRemoving || avatarUploading}
+                aria-label="Remove profile picture"
+                title="Remove profile picture"
+              >
+                {avatarRemoving ? (
+                  <span className="profile-spinner" />
+                ) : (
+                  <Trash2 size={12} />
+                )}
+              </button>
+            )}
           </div>
 
           <div className="profile-user-summary">
@@ -281,6 +390,32 @@ export default function Profile({ user, onSave, showToast }) {
           </button>
         </form>
       </div>
+      {avatarPreviewOpen && (
+        <div
+          className="avatar-preview-overlay"
+          onClick={() => setAvatarPreviewOpen(false)}
+        >
+          <div
+            className="avatar-preview-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="avatar-preview-close"
+              onClick={() => setAvatarPreviewOpen(false)}
+              aria-label="Close profile picture preview"
+            >
+              <X size={20} />
+            </button>
+
+            <img
+              src={`http://127.0.0.1:8000${user.avatar_url}`}
+              alt="Profile preview"
+              className="avatar-preview-image"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
