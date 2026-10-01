@@ -39,6 +39,20 @@ class TokenService:
         except JWTError:
             return None
 
+    def create_password_reset_token(self, subject: str) -> str:
+        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.RESET_TOKEN_EXPIRE_MINUTES)
+        payload = {"sub": subject, "exp": expire, "purpose": "password_reset"}
+        return jwt.encode(payload, self._secret_key, algorithm=self._algorithm)
+
+    def decode_password_reset_token(self, token: str) -> str | None:
+        try:
+            payload = jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+            if payload.get("purpose") != "password_reset":
+                return None
+            return payload.get("sub")
+        except JWTError:
+            return None
+
 
 password_hasher = PasswordHasher()
 token_service = TokenService()
