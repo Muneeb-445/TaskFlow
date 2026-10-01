@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import ProtectedRoute from "./shared/components/ProtectedRoute/ProtectedRoute";
+import PublicRoute from "./shared/components/PublicRoute/PublicRoute";
 import TaskDetails from "./features/tasks/pages/TaskDetails";
 import CreateEditTask from "./features/tasks/pages/CreateEditTask";
 
@@ -108,17 +109,19 @@ export default function AppRoutes({
     <Routes>
       {/* Public routes */}
 
-      <Route
-        path="/login"
-        element={<Login onLogin={onLogin} onNav={onNav} />}
-      />
+      <Route element={<PublicRoute isLoggedIn={isLoggedIn} />}>
+        <Route
+          path="/login"
+          element={<Login onLogin={onLogin} onNav={onNav} />}
+        />
 
-      <Route path="/register" element={<Register onNav={onNav} />} />
+        <Route path="/register" element={<Register onNav={onNav} />} />
 
-      <Route
-        path="/forgot-password"
-        element={<ForgotPassword onNav={onNav} />}
-      />
+        <Route
+          path="/forgot-password"
+          element={<ForgotPassword onNav={onNav} />}
+        />
+      </Route>
 
       {/* Protected routes */}
 
