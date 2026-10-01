@@ -1,24 +1,39 @@
 import { useState } from 'react'
 import { ArrowLeft, Zap, Mail, CheckCircle } from 'lucide-react'
 
+import { forgotPassword } from '../api/auth'
+
 import './ForgotPassword.css'
 
 export default function ForgotPassword({ onNav }) {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (!email) return
+    if (!email.trim()) {
+      return
+    }
 
     setLoading(true)
+    setError('')
 
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      await forgotPassword(email.trim())
+
       setSent(true)
-    }, 900)
+    } catch (error) {
+      const message =
+        error.response?.data?.detail ||
+        'Unable to send the reset link. Please try again.'
+
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -95,14 +110,23 @@ export default function ForgotPassword({ onNav }) {
                     id="forgot-password-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      setError('')
+                    }}
                     placeholder="you@example.com"
                   />
                 </div>
 
+                {error && (
+                  <p className="forgot-password-error">
+                    {error}
+                  </p>
+                )}
+
                 <button
                   type="submit"
-                  disabled={loading || !email}
+                  disabled={loading || !email.trim()}
                   className="forgot-password-primary-button"
                 >
                   {loading ? (

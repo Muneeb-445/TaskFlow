@@ -14,6 +14,7 @@ import CreateEditTask from "./features/tasks/pages/CreateEditTask";
 import Login from "./features/auth/pages/Login";
 import Register from "./features/auth/pages/Register";
 import ForgotPassword from "./features/auth/pages/ForgotPassword";
+import ResetPassword from "./features/auth/pages/ResetPassword";
 
 import Dashboard from "./features/dashboard/pages/Dashboard";
 import MyTasks from "./features/tasks/pages/MyTasks";
@@ -120,6 +121,10 @@ export default function AppRoutes({
         <Route
           path="/forgot-password"
           element={<ForgotPassword onNav={onNav} />}
+        />
+        <Route
+          path="/reset-password"
+          element={<ResetPassword onNav={onNav} />}
         />
       </Route>
 
