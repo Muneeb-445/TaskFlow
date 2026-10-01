@@ -26,6 +26,9 @@ import useCategories from "./features/categories/hooks/useCategories";
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(
+    location.pathname,
+  );
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,6 +49,7 @@ export default function App() {
 
   const { isLoggedIn, authLoading, setAuthLoading, completeLogin, logout } =
     useAuth();
+  const showAuthLayout = !isLoggedIn || isAuthPage;
 
   useEffect(() => {
     const restoreAuth = async () => {
@@ -244,26 +248,20 @@ export default function App() {
   if (authLoading) {
     return null;
   }
-  /*
-   * Authentication screens
-   */
-  if (!isLoggedIn) {
-    return (
-      <div className="app-auth">
-        <Toast toasts={toasts} onRemove={removeToast} />
+  return showAuthLayout ? (
+    <div className="app-auth">
+      <AppRoutes
+        isLoggedIn={isLoggedIn}
+        onLogin={handleLogin}
+        onNav={handleNav}
+      />
 
-        <AppRoutes
-          isLoggedIn={isLoggedIn}
-          onLogin={handleLogin}
-          onNav={handleNav}
-        />
-      </div>
-    );
-  }
-
-  return (
+      <Toast toasts={toasts} onRemove={removeToast} />
+    </div>
+  ) : (
     <div className="app-layout">
       <Sidebar onNav={handleNav} onLogout={handleLogout} />
+
       <div className="app-content">
         <Header
           user={user}

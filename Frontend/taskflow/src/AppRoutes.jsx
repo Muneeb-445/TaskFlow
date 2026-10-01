@@ -6,6 +6,7 @@ import {
   useParams,
 } from "react-router-dom";
 
+import ProtectedRoute from "./shared/components/ProtectedRoute/ProtectedRoute";
 import TaskDetails from "./features/tasks/pages/TaskDetails";
 import CreateEditTask from "./features/tasks/pages/CreateEditTask";
 
@@ -51,12 +52,7 @@ function TaskDetailsRoute({
   );
 }
 
-function EditTaskRoute({
-  tasks,
-  categories,
-  onSave,
-  onBack,
-}) {
+function EditTaskRoute({ tasks, categories, onSave, onBack }) {
   const { taskId } = useParams();
 
   const task = tasks.find((item) => item.id === Number(taskId));
@@ -110,143 +106,130 @@ export default function AppRoutes({
 
   return (
     <Routes>
-      {!isLoggedIn ? (
-        <>
-          <Route
-            path="/login"
-            element={<Login onLogin={onLogin} onNav={onNav} />}
-          />
+      {/* Public routes */}
 
-          <Route
-            path="/register"
-            element={<Register onNav={onNav} />}
-          />
+      <Route
+        path="/login"
+        element={<Login onLogin={onLogin} onNav={onNav} />}
+      />
 
-          <Route
-            path="/forgot-password"
-            element={<ForgotPassword onNav={onNav} />}
-          />
+      <Route path="/register" element={<Register onNav={onNav} />} />
 
-          <Route
-            path="*"
-            element={<Navigate to="/login" replace />}
-          />
-        </>
-      ) : (
-        <>
-          <Route
-            path="/dashboard"
-            element={
-              <Dashboard
-                categories={categories}
-                user={user}
-                onNav={onNav}
-                onSelectTask={onSelectTask}
-                onCreateTask={onCreateTask}
-              />
-            }
-          />
+      <Route
+        path="/forgot-password"
+        element={<ForgotPassword onNav={onNav} />}
+      />
 
-          <Route
-            path="/tasks"
-            element={
-              <MyTasks
-                tasks={tasks}
-                categories={categories}
-                onNav={onNav}
-                onSelectTask={onSelectTask}
-                onCreateTask={onCreateTask}
-                onEditTask={onEditTask}
-                onDeleteTask={onDeleteTask}
-                onCompleteTask={onCompleteTask}
-                searchQuery={searchQuery}
-                onSearch={onSearch}
-                statusFilter={statusFilter}
-                onStatusFilterChange={onStatusFilterChange}
-                priorityFilter={priorityFilter}
-                onPriorityFilterChange={onPriorityFilterChange}
-                categoryFilter={categoryFilter}
-                onCategoryFilterChange={onCategoryFilterChange}
-                sortField={sortField}
-                onSortFieldChange={onSortFieldChange}
-              />
-            }
-          />
+      {/* Protected routes */}
 
-          <Route
-            path="/tasks/new"
-            element={
-              <CreateEditTask
-                task={undefined}
-                categories={categories}
-                onSave={onSaveTask}
-                onBack={() => navigate("/tasks")}
-              />
-            }
-          />
+      <Route element={<ProtectedRoute isLoggedIn={isLoggedIn} />}>
+        <Route
+          path="/dashboard"
+          element={
+            <Dashboard
+              categories={categories}
+              user={user}
+              onNav={onNav}
+              onSelectTask={onSelectTask}
+              onCreateTask={onCreateTask}
+            />
+          }
+        />
 
-          <Route
-            path="/tasks/:taskId"
-            element={
-              <TaskDetailsRoute
-                tasks={tasks}
-                categories={categories}
-                onBack={() => navigate("/tasks")}
-                onEdit={onEditTask}
-                onStart={onStartTask}
-                onDelete={onDeleteTask}
-                onComplete={onCompleteTask}
-                onReopen={onReopenTask}
-              />
-            }
-          />
+        <Route
+          path="/tasks"
+          element={
+            <MyTasks
+              tasks={tasks}
+              categories={categories}
+              onNav={onNav}
+              onSelectTask={onSelectTask}
+              onCreateTask={onCreateTask}
+              onEditTask={onEditTask}
+              onDeleteTask={onDeleteTask}
+              onCompleteTask={onCompleteTask}
+              searchQuery={searchQuery}
+              onSearch={onSearch}
+              statusFilter={statusFilter}
+              onStatusFilterChange={onStatusFilterChange}
+              priorityFilter={priorityFilter}
+              onPriorityFilterChange={onPriorityFilterChange}
+              categoryFilter={categoryFilter}
+              onCategoryFilterChange={onCategoryFilterChange}
+              sortField={sortField}
+              onSortFieldChange={onSortFieldChange}
+            />
+          }
+        />
 
-          <Route
-            path="/tasks/:taskId/edit"
-            element={
-              <EditTaskRoute
-                tasks={tasks}
-                categories={categories}
-                onSave={onSaveTask}
-                onBack={() => navigate("/tasks")}
-              />
-            }
-          />
+        <Route
+          path="/tasks/new"
+          element={
+            <CreateEditTask
+              task={undefined}
+              categories={categories}
+              onSave={onSaveTask}
+              onBack={() => navigate("/tasks")}
+            />
+          }
+        />
 
-          <Route
-            path="/categories"
-            element={
-              <Categories
-                categories={categories}
-                onCreate={onCreateCategory}
-                onEdit={onEditCategory}
-                onDelete={onDeleteCategory}
-              />
-            }
-          />
+        <Route
+          path="/tasks/:taskId"
+          element={
+            <TaskDetailsRoute
+              tasks={tasks}
+              categories={categories}
+              onBack={() => navigate("/tasks")}
+              onEdit={onEditTask}
+              onStart={onStartTask}
+              onDelete={onDeleteTask}
+              onComplete={onCompleteTask}
+              onReopen={onReopenTask}
+            />
+          }
+        />
 
-          <Route
-            path="/profile"
-            element={
-              <Profile
-                user={user}
-                onSave={onSaveUser}
-                showToast={showToast}
-              />
-            }
-          />
+        <Route
+          path="/tasks/:taskId/edit"
+          element={
+            <EditTaskRoute
+              tasks={tasks}
+              categories={categories}
+              onSave={onSaveTask}
+              onBack={() => navigate("/tasks")}
+            />
+          }
+        />
 
-          <Route
-            path="/settings"
-            element={<Settings showToast={showToast} />}
-          />
+        <Route
+          path="/categories"
+          element={
+            <Categories
+              categories={categories}
+              onCreate={onCreateCategory}
+              onEdit={onEditCategory}
+              onDelete={onDeleteCategory}
+            />
+          }
+        />
 
-          <Route
-            path="*"
-            element={<Navigate to="/dashboard" replace />}
-          />
-        </>
-      )}
+        <Route
+          path="/profile"
+          element={
+            <Profile user={user} onSave={onSaveUser} showToast={showToast} />
+          }
+        />
+
+        <Route path="/settings" element={<Settings showToast={showToast} />} />
+      </Route>
+
+      {/* Fallback */}
+
+      <Route
+        path="*"
+        element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} replace />}
+      />
     </Routes>
   );
 }
