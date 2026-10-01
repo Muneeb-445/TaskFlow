@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-
+import AppRoutes from "./AppRoutes";
+import { useLocation, useNavigate } from "react-router-dom";
 import Toast from "./shared/components/Toast/Toast";
 import useToast from "./shared/hooks/useToast";
 import Sidebar, { BottomNav } from "./shared/components/Sidebar/Sidebar";
@@ -7,12 +8,6 @@ import Header from "./shared/components/Header/Header";
 import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
 import useAuth from "./features/auth/hooks/useAuth";
-import Login from "./features/auth/pages/Login";
-import Register from "./features/auth/pages/Register";
-import ForgotPassword from "./features/auth/pages/ForgotPassword";
-import Dashboard from "./features/dashboard/pages/Dashboard";
-import MyTasks from "./features/tasks/pages/MyTasks";
-import TaskDetails from "./features/tasks/pages/TaskDetails";
 import {
   getTasks,
   createTask,
@@ -22,10 +17,6 @@ import {
   completeTask,
   reopenTask,
 } from "./features/tasks/api/tasks";
-import CreateEditTask from "./features/tasks/pages/CreateEditTask";
-import Categories from "./features/categories/pages/Categories";
-import Profile from "./features/user/pages/Profile";
-import Settings from "./features/user/pages/Settings";
 
 import "./App.css";
 import { getCurrentUser } from "./features/user/api/users";
@@ -33,11 +24,10 @@ import { getCategories } from "./features/categories/api/categories";
 import useCategories from "./features/categories/hooks/useCategories";
 
 export default function App() {
-  const [page, setPage] = useState("login");
+  const location = useLocation();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const [selectedTaskId, setSelectedTaskId] = useState(null);
-  const [editingTaskId, setEditingTaskId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [taskStatusFilter, setTaskStatusFilter] = useState("all");
   const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
@@ -76,11 +66,10 @@ export default function App() {
         setTasks(taskData.items);
 
         completeLogin();
-        setPage("dashboard");
       } catch {
         localStorage.removeItem("access_token");
         logout();
-        setPage("login");
+        navigate("/login");
       } finally {
         setAuthLoading(false);
       }
@@ -100,22 +89,37 @@ export default function App() {
       setTasks(taskData.items);
 
       completeLogin();
-      setPage("dashboard");
+      navigate("/dashboard");
     } catch {
       localStorage.removeItem("access_token");
       logout();
-      setPage("login");
+      navigate("/login");
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
     logout();
-    setPage("login");
+    navigate("/login");
   };
 
   const handleNav = (nextPage) => {
-    setPage(nextPage);
+    const routes = {
+      login: "/login",
+      register: "/register",
+      "forgot-password": "/forgot-password",
+      dashboard: "/dashboard",
+      "my-tasks": "/tasks",
+      categories: "/categories",
+      profile: "/profile",
+      settings: "/settings",
+    };
+
+    const route = routes[nextPage];
+
+    if (route) {
+      navigate(route);
+    }
 
     if (nextPage !== "my-tasks") {
       setSearchQuery("");
@@ -123,18 +127,15 @@ export default function App() {
   };
 
   const handleSelectTask = (id) => {
-    setSelectedTaskId(id);
-    setPage("task-details");
+    navigate(`/tasks/${id}`);
   };
 
   const handleCreateTask = () => {
-    setEditingTaskId(null);
-    setPage("create-task");
+    navigate("/tasks/new");
   };
 
   const handleEditTask = (id) => {
-    setEditingTaskId(id);
-    setPage("edit-task");
+    navigate(`/tasks/${id}/edit`);
   };
   const handleStartTask = async (taskId) => {
     try {
@@ -152,19 +153,21 @@ export default function App() {
     }
   };
   const handleSaveTask = async (data) => {
-    if (editingTaskId) {
+    const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
+
+    if (editMatch) {
+      const taskId = Number(editMatch[1]);
+
       try {
-        const updatedTask = await updateTask(editingTaskId, data);
+        const updatedTask = await updateTask(taskId, data);
 
         setTasks((currentTasks) =>
-          currentTasks.map((task) =>
-            task.id === editingTaskId ? updatedTask : task,
-          ),
+          currentTasks.map((task) => (task.id === taskId ? updatedTask : task)),
         );
 
         showToast("Task updated!");
 
-        setPage(selectedTaskId === editingTaskId ? "task-details" : "my-tasks");
+        navigate(`/tasks/${taskId}`);
       } catch (error) {
         const message =
           error.response?.data?.detail || "Failed to update task.";
@@ -181,7 +184,8 @@ export default function App() {
       setTasks((currentTasks) => [newTask, ...currentTasks]);
 
       showToast("Task created! 🎉");
-      setPage("my-tasks");
+
+      navigate("/tasks");
     } catch (error) {
       const message = error.response?.data?.detail || "Failed to create task.";
 
@@ -195,11 +199,8 @@ export default function App() {
 
       setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
 
-      if (page === "task-details") {
-        setPage("my-tasks");
-      }
-
       showToast("Task deleted.", "info");
+      navigate("/tasks");
     } catch (error) {
       const message = error.response?.data?.detail || "Failed to delete task.";
 
@@ -251,27 +252,18 @@ export default function App() {
       <div className="app-auth">
         <Toast toasts={toasts} onRemove={removeToast} />
 
-        {page === "login" && <Login onLogin={handleLogin} onNav={handleNav} />}
-
-        {page === "register" && <Register onNav={handleNav} />}
-
-        {page === "forgot-password" && <ForgotPassword onNav={handleNav} />}
+        <AppRoutes
+          isLoggedIn={isLoggedIn}
+          onLogin={handleLogin}
+          onNav={handleNav}
+        />
       </div>
     );
   }
 
-  const selectedTask = selectedTaskId
-    ? tasks.find((task) => task.id === selectedTaskId)
-    : null;
-
-  const editingTask = editingTaskId
-    ? tasks.find((task) => task.id === editingTaskId)
-    : undefined;
-
   return (
     <div className="app-layout">
-      <Sidebar current={page} onNav={handleNav} onLogout={handleLogout} />
-
+      <Sidebar onNav={handleNav} onLogout={handleLogout} />
       <div className="app-content">
         <Header
           user={user}
@@ -282,100 +274,50 @@ export default function App() {
           onSearch={(query) => {
             setSearchQuery(query);
 
-            if (query && page !== "my-tasks") {
-              setPage("my-tasks");
+            if (query && location.pathname !== "/tasks") {
+              navigate("/tasks");
             }
           }}
         />
 
         <main className="app-main">
-          <ErrorBoundary onReset={() => setPage("dashboard")}>
-            {page === "dashboard" && (
-              <Dashboard
-                categories={categories}
-                user={user}
-                onNav={handleNav}
-                onSelectTask={handleSelectTask}
-                onCreateTask={handleCreateTask}
-              />
-            )}
-
-            {page === "my-tasks" && (
-              <MyTasks
-                tasks={tasks}
-                categories={categories}
-                onNav={handleNav}
-                onSelectTask={handleSelectTask}
-                onCreateTask={handleCreateTask}
-                onEditTask={handleEditTask}
-                onDeleteTask={handleDeleteTask}
-                onCompleteTask={handleCompleteTask}
-                searchQuery={searchQuery}
-                onSearch={setSearchQuery}
-                statusFilter={taskStatusFilter}
-                onStatusFilterChange={setTaskStatusFilter}
-                priorityFilter={taskPriorityFilter}
-                onPriorityFilterChange={setTaskPriorityFilter}
-                categoryFilter={taskCategoryFilter}
-                onCategoryFilterChange={setTaskCategoryFilter}
-                sortField={taskSortField}
-                onSortFieldChange={setTaskSortField}
-              />
-            )}
-
-            {page === "task-details" && selectedTask && (
-              <TaskDetails
-                task={selectedTask}
-                categories={categories}
-                onBack={() => setPage("my-tasks")}
-                onEdit={() => handleEditTask(selectedTask.id)}
-                onStart={() => handleStartTask(selectedTask.id)}
-                onDelete={() => handleDeleteTask(selectedTask.id)}
-                onComplete={() => handleCompleteTask(selectedTask.id)}
-                onReopen={() => handleReopenTask(selectedTask.id)}
-              />
-            )}
-
-            {page === "task-details" && !selectedTask && (
-              <div className="task-not-found">Task not found.</div>
-            )}
-
-            {(page === "create-task" || page === "edit-task") && (
-              <CreateEditTask
-                task={editingTask}
-                categories={categories}
-                onSave={handleSaveTask}
-                onBack={() =>
-                  setPage(editingTaskId ? "task-details" : "my-tasks")
-                }
-              />
-            )}
-
-            {page === "categories" && (
-              <Categories
-                categories={categories}
-                onCreate={handleCreateCategory}
-                onEdit={handleEditCategory}
-                onDelete={handleDeleteCategory}
-              />
-            )}
-
-            {page === "profile" && (
-              <Profile
-                user={user}
-                onSave={(updatedUser) => {
-                  setUser(updatedUser);
-                }}
-                showToast={showToast}
-              />
-            )}
-
-            {page === "settings" && <Settings showToast={showToast} />}
+          <ErrorBoundary onReset={() => navigate("/dashboard")}>
+            <AppRoutes
+              isLoggedIn={isLoggedIn}
+              onLogin={handleLogin}
+              onNav={handleNav}
+              categories={categories}
+              user={user}
+              onSelectTask={handleSelectTask}
+              onCreateTask={handleCreateTask}
+              tasks={tasks}
+              onEditTask={handleEditTask}
+              onStartTask={handleStartTask}
+              onReopenTask={handleReopenTask}
+              onSaveTask={handleSaveTask}
+              onDeleteTask={handleDeleteTask}
+              onCompleteTask={handleCompleteTask}
+              searchQuery={searchQuery}
+              onSearch={setSearchQuery}
+              statusFilter={taskStatusFilter}
+              onStatusFilterChange={setTaskStatusFilter}
+              priorityFilter={taskPriorityFilter}
+              onPriorityFilterChange={setTaskPriorityFilter}
+              categoryFilter={taskCategoryFilter}
+              onCategoryFilterChange={setTaskCategoryFilter}
+              sortField={taskSortField}
+              onSortFieldChange={setTaskSortField}
+              onCreateCategory={handleCreateCategory}
+              onEditCategory={handleEditCategory}
+              onDeleteCategory={handleDeleteCategory}
+              showToast={showToast}
+              onSaveUser={setUser}
+            />
           </ErrorBoundary>
         </main>
       </div>
 
-      <BottomNav current={page} onNav={handleNav} />
+      <BottomNav onNav={handleNav} />
 
       <Toast toasts={toasts} onRemove={removeToast} />
     </div>

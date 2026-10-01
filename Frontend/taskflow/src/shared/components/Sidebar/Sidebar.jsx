@@ -6,19 +6,54 @@ import {
   Settings,
   LogOut,
   Zap,
-} from 'lucide-react'
+} from "lucide-react";
+import { useLocation } from "react-router-dom";
 
-import './Sidebar.css'
+import "./Sidebar.css";
 
 const navItems = [
-  { page: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { page: 'my-tasks', label: 'My Tasks', icon: CheckSquare },
-  { page: 'categories', label: 'Categories', icon: Tag },
-  { page: 'profile', label: 'Profile', icon: User },
-  { page: 'settings', label: 'Settings', icon: Settings },
-]
+  { page: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { page: "my-tasks", label: "My Tasks", icon: CheckSquare },
+  { page: "categories", label: "Categories", icon: Tag },
+  { page: "profile", label: "Profile", icon: User },
+  { page: "settings", label: "Settings", icon: Settings },
+];
 
-export default function Sidebar({ current, onNav, onLogout }) {
+export default function Sidebar({ onNav, onLogout }) {
+  const location = useLocation();
+
+  const getActivePage = () => {
+    const pathname = location.pathname;
+
+    if (pathname === "/dashboard") {
+      return "dashboard";
+    }
+
+    if (
+      pathname === "/tasks" ||
+      pathname === "/tasks/new" ||
+      pathname.startsWith("/tasks/")
+    ) {
+      return "my-tasks";
+    }
+
+    if (pathname === "/categories") {
+      return "categories";
+    }
+
+    if (pathname === "/profile") {
+      return "profile";
+    }
+
+    if (pathname === "/settings") {
+      return "settings";
+    }
+
+    return "";
+  };
+
+  const current = getActivePage();
+
   return (
     <aside className="sidebar">
       {/* Logo */}
@@ -27,15 +62,13 @@ export default function Sidebar({ current, onNav, onLogout }) {
           <Zap size={16} color="#ffffff" fill="white" />
         </div>
 
-        <span className="sidebar-logo-text">
-          TaskFlow
-        </span>
+        <span className="sidebar-logo-text">TaskFlow</span>
       </div>
 
       {/* Navigation */}
       <nav className="sidebar-nav">
         {navItems.map(({ page, label, icon: Icon }) => {
-          const active = current === page
+          const active = current === page;
 
           return (
             <button
@@ -43,29 +76,23 @@ export default function Sidebar({ current, onNav, onLogout }) {
               type="button"
               onClick={() => onNav(page)}
               className={`sidebar-nav-item ${
-                active
-                  ? 'sidebar-nav-item-active'
-                  : 'sidebar-nav-item-inactive'
+                active ? "sidebar-nav-item-active" : "sidebar-nav-item-inactive"
               }`}
             >
               <Icon
                 size={18}
                 className={`sidebar-nav-icon ${
                   active
-                    ? 'sidebar-nav-icon-active'
-                    : 'sidebar-nav-icon-inactive'
+                    ? "sidebar-nav-icon-active"
+                    : "sidebar-nav-icon-inactive"
                 }`}
               />
 
-              <span className="sidebar-nav-label">
-                {label}
-              </span>
+              <span className="sidebar-nav-label">{label}</span>
 
-              {active && (
-                <span className="sidebar-active-dot" />
-              )}
+              {active && <span className="sidebar-active-dot" />}
             </button>
-          )
+          );
         })}
       </nav>
 
@@ -78,23 +105,54 @@ export default function Sidebar({ current, onNav, onLogout }) {
         >
           <LogOut size={18} />
 
-          <span className="sidebar-logout-label">
-            Logout
-          </span>
+          <span className="sidebar-logout-label">Logout</span>
         </button>
       </div>
     </aside>
-  )
+  );
 }
 
 /* bottom navigation on Mobile Screen */
-export function BottomNav({ current, onNav }) {
-  const tabs = navItems.slice(0, 4)
+export function BottomNav({ onNav }) {
+  const location = useLocation();
+  const tabs = navItems.slice(0, 4);
+
+  const getActivePage = () => {
+    const pathname = location.pathname;
+
+    if (pathname === "/dashboard") {
+      return "dashboard";
+    }
+
+    if (
+      pathname === "/tasks" ||
+      pathname === "/tasks/new" ||
+      pathname.startsWith("/tasks/")
+    ) {
+      return "my-tasks";
+    }
+
+    if (pathname === "/categories") {
+      return "categories";
+    }
+
+    if (pathname === "/profile") {
+      return "profile";
+    }
+
+    if (pathname === "/settings") {
+      return "settings";
+    }
+
+    return "";
+  };
+
+  const current = getActivePage();
 
   return (
     <nav className="bottom-nav">
       {tabs.map(({ page, label, icon: Icon }) => {
-        const active = current === page
+        const active = current === page;
 
         return (
           <button
@@ -102,19 +160,15 @@ export function BottomNav({ current, onNav }) {
             type="button"
             onClick={() => onNav(page)}
             className={`bottom-nav-item ${
-              active
-                ? 'bottom-nav-item-active'
-                : 'bottom-nav-item-inactive'
+              active ? "bottom-nav-item-active" : "bottom-nav-item-inactive"
             }`}
           >
             <Icon size={20} />
 
-            <span className="bottom-nav-label">
-              {label}
-            </span>
+            <span className="bottom-nav-label">{label}</span>
           </button>
-        )
+        );
       })}
     </nav>
-  )
+  );
 }
