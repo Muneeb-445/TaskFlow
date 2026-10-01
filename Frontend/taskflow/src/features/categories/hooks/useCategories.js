@@ -1,24 +1,32 @@
-import { useState } from 'react'
+import { useState } from "react";
 
 import {
   createCategory,
   updateCategory,
   deleteCategory,
-} from '../api/categories'
+  getCategories,
+} from "../api/categories";
 
 export default function useCategories(
   initialCategories = [],
   showToast
 ) {
-  const [categories, setCategories] =
-    useState(initialCategories)
+  const [categories, setCategories] = useState(initialCategories);
+
+  const loadCategories = async () => {
+    const categoryData = await getCategories();
+
+    setCategories(categoryData);
+
+    return categoryData;
+  };
 
   const handleCreateCategory = async (
     name,
     color
   ) => {
     try {
-      const newCategory = await createCategory(name)
+      const newCategory = await createCategory(name);
 
       setCategories((currentCategories) => [
         ...currentCategories,
@@ -26,17 +34,17 @@ export default function useCategories(
           ...newCategory,
           color,
         },
-      ])
+      ]);
 
-      showToast(`Category "${name}" created!`)
+      showToast(`Category "${name}" created!`);
     } catch (error) {
       const message =
         error.response?.data?.detail ||
-        'Failed to create category.'
+        "Failed to create category.";
 
-      showToast(message, 'error')
+      showToast(message, "error");
     }
-  }
+  };
 
   const handleEditCategory = async (
     id,
@@ -47,7 +55,7 @@ export default function useCategories(
       const updatedCategory = await updateCategory(
         id,
         name
-      )
+      );
 
       setCategories((currentCategories) =>
         currentCategories.map((category) =>
@@ -58,43 +66,44 @@ export default function useCategories(
               }
             : category
         )
-      )
+      );
 
-      showToast('Category updated!')
+      showToast("Category updated!");
     } catch (error) {
       const message =
         error.response?.data?.detail ||
-        'Failed to update category.'
+        "Failed to update category.";
 
-      showToast(message, 'error')
+      showToast(message, "error");
     }
-  }
+  };
 
   const handleDeleteCategory = async (id) => {
     try {
-      await deleteCategory(id)
+      await deleteCategory(id);
 
       setCategories((currentCategories) =>
         currentCategories.filter(
           (category) => category.id !== id
         )
-      )
+      );
 
-      showToast('Category deleted.', 'info')
+      showToast("Category deleted.", "info");
     } catch (error) {
       const message =
         error.response?.data?.detail ||
-        'Failed to delete category.'
+        "Failed to delete category.";
 
-      showToast(message, 'error')
+      showToast(message, "error");
     }
-  }
+  };
 
   return {
     categories,
     setCategories,
+    loadCategories,
     handleCreateCategory,
     handleEditCategory,
     handleDeleteCategory,
-  }
+  };
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import {
   getTasks,
+  getTask,
   createTask,
   updateTask,
   deleteTask,
@@ -10,12 +11,32 @@ import {
   reopenTask,
 } from "../api/tasks";
 
-export default function useTasks(showToast) {
+export default function useTasks(showToast, onTaskChanged) {
   const [tasks, setTasks] = useState([]);
 
   const loadTasks = async () => {
     const taskData = await getTasks();
     setTasks(taskData.items);
+  };
+
+  const loadTask = async (taskId) => {
+    const task = await getTask(taskId);
+
+    setTasks((currentTasks) => {
+      const exists = currentTasks.some(
+        (currentTask) => currentTask.id === task.id,
+      );
+
+      if (exists) {
+        return currentTasks.map((currentTask) =>
+          currentTask.id === task.id ? task : currentTask,
+        );
+      }
+
+      return [task, ...currentTasks];
+    });
+
+    return task;
   };
 
   const handleCreateTask = async (data) => {
@@ -24,12 +45,19 @@ export default function useTasks(showToast) {
 
       setTasks((currentTasks) => [newTask, ...currentTasks]);
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was created successfully.
+      }
+
       showToast("Task created! 🎉");
 
       return newTask;
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to create task.";
+        error.response?.data?.detail ||
+        "Failed to create task.";
 
       showToast(message, "error");
 
@@ -47,12 +75,19 @@ export default function useTasks(showToast) {
         ),
       );
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was updated successfully.
+      }
+
       showToast("Task updated!");
 
       return updatedTask;
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to update task.";
+        error.response?.data?.detail ||
+        "Failed to update task.";
 
       showToast(message, "error");
 
@@ -68,10 +103,17 @@ export default function useTasks(showToast) {
         currentTasks.filter((task) => task.id !== taskId),
       );
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was deleted successfully.
+      }
+
       showToast("Task deleted.", "info");
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to delete task.";
+        error.response?.data?.detail ||
+        "Failed to delete task.";
 
       showToast(message, "error");
 
@@ -89,12 +131,19 @@ export default function useTasks(showToast) {
         ),
       );
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was started successfully.
+      }
+
       showToast("Task started!");
 
       return updatedTask;
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to start task.";
+        error.response?.data?.detail ||
+        "Failed to start task.";
 
       showToast(message, "error");
 
@@ -112,12 +161,19 @@ export default function useTasks(showToast) {
         ),
       );
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was completed successfully.
+      }
+
       showToast("Task completed! 🎉");
 
       return updatedTask;
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to complete task.";
+        error.response?.data?.detail ||
+        "Failed to complete task.";
 
       showToast(message, "error");
 
@@ -135,12 +191,19 @@ export default function useTasks(showToast) {
         ),
       );
 
+      try {
+        await onTaskChanged?.();
+      } catch {
+        // Task was reopened successfully.
+      }
+
       showToast("Task reopened.", "info");
 
       return updatedTask;
     } catch (error) {
       const message =
-        error.response?.data?.detail || "Failed to reopen task.";
+        error.response?.data?.detail ||
+        "Failed to reopen task.";
 
       showToast(message, "error");
 
@@ -152,6 +215,7 @@ export default function useTasks(showToast) {
     tasks,
     setTasks,
     loadTasks,
+    loadTask,
     handleCreateTask,
     handleUpdateTask,
     handleDeleteTask,

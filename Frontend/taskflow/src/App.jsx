@@ -30,11 +30,9 @@ export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isAuthPage = [
-    "/login",
-    "/register",
-    "/forgot-password",
-  ].includes(location.pathname);
+  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(
+    location.pathname,
+  );
 
   const [user, setUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,24 +43,25 @@ export default function App() {
 
   const { toasts, showToast, removeToast } = useToast();
 
-const {
-  tasks,
-  loadTasks,
-  handleCreateTask: createTask,
-  handleUpdateTask,
-  handleDeleteTask,
-  handleStartTask,
-  handleCompleteTask,
-  handleReopenTask,
-} = useTasks(showToast);
-
   const {
     categories,
     setCategories,
+    loadCategories,
     handleCreateCategory,
     handleEditCategory,
     handleDeleteCategory,
   } = useCategories([], showToast);
+
+  const {
+    tasks,
+    loadTasks,
+    handleCreateTask: createTask,
+    handleUpdateTask,
+    handleDeleteTask,
+    handleStartTask,
+    handleCompleteTask,
+    handleReopenTask,
+  } = useTasks(showToast, loadCategories);
 
   const { isLoggedIn, authLoading, setAuthLoading, completeLogin, logout } =
     useAuth();
@@ -118,6 +117,17 @@ const {
       navigate("/login");
     }
   };
+  const handleDeleteTaskAndNavigate = async (taskId) => {
+    try {
+      await handleDeleteTask(taskId);
+
+      if (location.pathname === `/tasks/${taskId}`) {
+        navigate("/tasks");
+      }
+    } catch {
+      // Error toast is already handled by useTasks.
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -160,7 +170,7 @@ const {
     navigate(`/tasks/${id}/edit`);
   };
 
-  const handleSaveTask = async (data) => {
+ const handleSaveTask = async (data) => {
   const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
 
   if (editMatch) {
@@ -233,7 +243,7 @@ const {
               onStartTask={handleStartTask}
               onReopenTask={handleReopenTask}
               onSaveTask={handleSaveTask}
-              onDeleteTask={handleDeleteTask}
+              onDeleteTask={handleDeleteTaskAndNavigate}
               onCompleteTask={handleCompleteTask}
               searchQuery={searchQuery}
               onSearch={setSearchQuery}
