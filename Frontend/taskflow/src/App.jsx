@@ -1,36 +1,42 @@
 import { useState, useEffect } from "react";
+
 import AppRoutes from "./AppRoutes";
+
 import { useLocation, useNavigate } from "react-router-dom";
+
 import Toast from "./shared/components/Toast/Toast";
+
 import useToast from "./shared/hooks/useToast";
+
 import Sidebar, { BottomNav } from "./shared/components/Sidebar/Sidebar";
+
 import Header from "./shared/components/Header/Header";
+
 import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
 import useAuth from "./features/auth/hooks/useAuth";
-import {
-  getTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  startTask,
-  completeTask,
-  reopenTask,
-} from "./features/tasks/api/tasks";
+
+import useTasks from "./features/tasks/hooks/useTasks";
 
 import "./App.css";
+
 import { getCurrentUser } from "./features/user/api/users";
+
 import { getCategories } from "./features/categories/api/categories";
+
 import useCategories from "./features/categories/hooks/useCategories";
 
 export default function App() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isAuthPage = ["/login", "/register", "/forgot-password"].includes(
-    location.pathname,
-  );
+
+  const isAuthPage = [
+    "/login",
+    "/register",
+    "/forgot-password",
+  ].includes(location.pathname);
+
   const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [taskStatusFilter, setTaskStatusFilter] = useState("all");
   const [taskPriorityFilter, setTaskPriorityFilter] = useState("all");
@@ -38,6 +44,17 @@ export default function App() {
   const [taskSortField, setTaskSortField] = useState("dueDate");
 
   const { toasts, showToast, removeToast } = useToast();
+
+const {
+  tasks,
+  loadTasks,
+  handleCreateTask: createTask,
+  handleUpdateTask,
+  handleDeleteTask,
+  handleStartTask,
+  handleCompleteTask,
+  handleReopenTask,
+} = useTasks(showToast);
 
   const {
     categories,
@@ -49,6 +66,7 @@ export default function App() {
 
   const { isLoggedIn, authLoading, setAuthLoading, completeLogin, logout } =
     useAuth();
+
   const showAuthLayout = !isLoggedIn || isAuthPage;
 
   useEffect(() => {
@@ -63,11 +81,11 @@ export default function App() {
       try {
         const currentUser = await getCurrentUser();
         const userCategories = await getCategories();
-        const taskData = await getTasks();
 
         setUser(currentUser);
         setCategories(userCategories);
-        setTasks(taskData.items);
+
+        await loadTasks();
 
         completeLogin();
       } catch {
@@ -86,11 +104,11 @@ export default function App() {
     try {
       const currentUser = await getCurrentUser();
       const userCategories = await getCategories();
-      const taskData = await getTasks();
 
       setUser(currentUser);
       setCategories(userCategories);
-      setTasks(taskData.items);
+
+      await loadTasks();
 
       completeLogin();
       navigate("/dashboard");
@@ -141,113 +159,35 @@ export default function App() {
   const handleEditTask = (id) => {
     navigate(`/tasks/${id}/edit`);
   };
-  const handleStartTask = async (taskId) => {
-    try {
-      const updatedTask = await startTask(taskId);
 
-      setTasks((currentTasks) =>
-        currentTasks.map((task) => (task.id === taskId ? updatedTask : task)),
-      );
-
-      showToast("Task started!");
-    } catch (error) {
-      const message = error.response?.data?.detail || "Failed to start task.";
-
-      showToast(message, "error");
-    }
-  };
   const handleSaveTask = async (data) => {
-    const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
+  const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
 
-    if (editMatch) {
-      const taskId = Number(editMatch[1]);
-
-      try {
-        const updatedTask = await updateTask(taskId, data);
-
-        setTasks((currentTasks) =>
-          currentTasks.map((task) => (task.id === taskId ? updatedTask : task)),
-        );
-
-        showToast("Task updated!");
-
-        navigate(`/tasks/${taskId}`);
-      } catch (error) {
-        const message =
-          error.response?.data?.detail || "Failed to update task.";
-
-        showToast(message, "error");
-      }
-
-      return;
-    }
+  if (editMatch) {
+    const taskId = Number(editMatch[1]);
 
     try {
-      const newTask = await createTask(data);
-
-      setTasks((currentTasks) => [newTask, ...currentTasks]);
-
-      showToast("Task created! 🎉");
-
-      navigate("/tasks");
-    } catch (error) {
-      const message = error.response?.data?.detail || "Failed to create task.";
-
-      showToast(message, "error");
+      await handleUpdateTask(taskId, data);
+      navigate(`/tasks/${taskId}`);
+    } catch {
+      // Error toast is already handled by useTasks.
     }
-  };
 
-  const handleDeleteTask = async (id) => {
-    try {
-      await deleteTask(id);
+    return;
+  }
 
-      setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id));
-
-      showToast("Task deleted.", "info");
-      navigate("/tasks");
-    } catch (error) {
-      const message = error.response?.data?.detail || "Failed to delete task.";
-
-      showToast(message, "error");
-    }
-  };
-
-  const handleCompleteTask = async (id) => {
-    try {
-      const updatedTask = await completeTask(id);
-
-      setTasks((currentTasks) =>
-        currentTasks.map((task) => (task.id === id ? updatedTask : task)),
-      );
-
-      showToast("Task completed! 🎉");
-    } catch (error) {
-      const message =
-        error.response?.data?.detail || "Failed to complete task.";
-
-      showToast(message, "error");
-    }
-  };
-
-  const handleReopenTask = async (id) => {
-    try {
-      const updatedTask = await reopenTask(id);
-
-      setTasks((currentTasks) =>
-        currentTasks.map((task) => (task.id === id ? updatedTask : task)),
-      );
-
-      showToast("Task reopened.", "info");
-    } catch (error) {
-      const message = error.response?.data?.detail || "Failed to reopen task.";
-
-      showToast(message, "error");
-    }
-  };
+  try {
+    await createTask(data);
+    navigate("/tasks");
+  } catch {
+    // Error toast is already handled by useTasks.
+  }
+};
 
   if (authLoading) {
     return null;
   }
+
   return showAuthLayout ? (
     <div className="app-auth">
       <AppRoutes
