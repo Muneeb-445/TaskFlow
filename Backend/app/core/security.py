@@ -35,6 +35,8 @@ class TokenService:
     def decode_access_token(self, token: str) -> str | None:
         try:
             payload = jwt.decode(token, self._secret_key, algorithms=[self._algorithm])
+            if payload.get("purpose") is not None:
+                return None
             return payload.get("sub")
         except JWTError:
             return None

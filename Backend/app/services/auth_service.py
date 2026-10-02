@@ -8,7 +8,9 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import Token,ResetPasswordRequest
 from app.schemas.user import UserCreate, UserLogin
+import logging
 
+logger = logging.getLogger(__name__)
 
 class AuthService:
     """Business logic for registration and login. No HTTP knowledge here."""
@@ -47,26 +49,25 @@ class AuthService:
         if user is None:
             return
 
-        reset_token = token_service.create_password_reset_token(
-            subject=str(user.id)
-        )
+        reset_token = token_service.create_password_reset_token(subject=str(user.id))
+        reset_url = f"{settings.FRONTEND_RESET_PASSWORD_URL}?token={reset_token}"
 
-        reset_url = (
-            f"{settings.FRONTEND_RESET_PASSWORD_URL}"
-            f"?token={reset_token}"
-        )
-
-        email_service.send_email(
-            recipient_email=user.email,
-            subject="Reset your TaskFlow password",
-            body=(
-                "You requested to reset your TaskFlow password.\n\n"
-                f"Reset your password here:\n{reset_url}\n\n"
-                f"This link will expire in "
-                f"{settings.RESET_TOKEN_EXPIRE_MINUTES} minutes.\n\n"
-                "If you did not request this, you can ignore this email."
-            ),
-    )
+        try:
+            email_service.send_email(
+                recipient_email=user.email,
+                subject="Reset your TaskFlow password",
+                body=(
+                    "You requested to reset your TaskFlow password.\n\n"
+                    f"Reset your password here:\n{reset_url}\n\n"
+                    f"This link will expire in {settings.RESET_TOKEN_EXPIRE_MINUTES} minutes.\n\n"
+                    "If you did not request this, you can ignore this email."
+                ),
+            )
+        except Exception:
+            logger.exception("Failed to send password reset email to user_id=%s", user.id)
+            # Deliberately swallowed: the router must always return the same
+            # generic response whether or not the email was sent, or an SMTP
+            # failure becomes a side channel for confirming an email exists.
     
     def reset_password(self, data: ResetPasswordRequest) -> None:
         user_id = token_service.decode_password_reset_token(data.token)
