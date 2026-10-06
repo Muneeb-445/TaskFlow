@@ -4,6 +4,7 @@ from app.core.exceptions import ConflictError, NotFoundError
 from app.models.category import Category
 from app.repositories.category_repository import CategoryRepository
 from app.schemas.category import CategoryCreate, CategoryResponse, CategoryUpdate
+from app.services.notification_service import NotificationService
 
 
 def compute_category_stats(task_count: int | None, completed_count: int | None) -> dict[str, int]:
@@ -28,6 +29,7 @@ class CategoryService:
 
     def __init__(self, db: Session) -> None:
         self._repository = CategoryRepository(db)
+        self._notification_service = NotificationService(db)  # NEW
 
     def _to_response(self, category: Category, task_count: int, completed_count: int) -> CategoryResponse:
         stats = compute_category_stats(task_count, completed_count)
@@ -79,4 +81,9 @@ class CategoryService:
         if category is None or category.user_id != user_id:
             raise NotFoundError("Category not found.")
 
+        category_name = category.name
+        row = self._repository.get_one_with_stats(category_id, user_id)
+        _, task_count, _ = row
+
         self._repository.delete(category)
+        self._notification_service.notify_category_deleted(user_id, category_name, task_count or 0)

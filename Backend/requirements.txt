@@ -22,3 +22,5 @@ pytest
 pytest-asyncio
 httpx
 Pillow
+
+APScheduler>=3.10,<4.0

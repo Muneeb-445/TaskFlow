@@ -6,6 +6,7 @@ from app.core.security import password_hasher
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import ChangePasswordRequest, UserUpdate
+from app.services.notification_service import NotificationService
 
 
 class UserService:
@@ -14,6 +15,7 @@ class UserService:
 
     def __init__(self, db: Session) -> None:
         self._repository = UserRepository(db)
+        self._notification_service = NotificationService(db)  # NEW
 
     def update_profile(self, current_user: User, data: UserUpdate) -> User:
         return self._repository.update_profile(
@@ -30,7 +32,9 @@ class UserService:
             raise ConflictError("New password must be different from the current password.")
 
         new_password_hash = password_hasher.hash(data.new_password)
-        return self._repository.update_password(current_user, new_password_hash=new_password_hash)
+        updated_user = self._repository.update_password(current_user, new_password_hash=new_password_hash)
+        self._notification_service.notify_password_changed(current_user.id)  # NEW
+        return updated_user
     
     def upload_avatar(self, current_user: User, raw_bytes: bytes, content_type: str) -> User:
         processed_bytes = avatar_storage.validate_and_process(raw_bytes, content_type)

@@ -9,6 +9,7 @@ from app.repositories.user_repository import UserRepository
 from app.schemas.auth import Token,ResetPasswordRequest
 from app.schemas.user import UserCreate, UserLogin
 import logging
+from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class AuthService:
 
     def __init__(self, db: Session) -> None:
         self._repository = UserRepository(db)
+        self._notification_service = NotificationService(db)
 
     def register(self, data: UserCreate) -> User:
         existing_user = self._repository.get_by_email(data.email)
@@ -81,10 +83,7 @@ class AuthService:
             raise InvalidCredentialsError("Invalid or expired reset token.")
 
         hashed_password = password_hasher.hash(data.new_password)
-
-        self._repository.update_password(
-            user,
-            new_password_hash=hashed_password,
-    )
+        self._repository.update_password(user, new_password_hash=hashed_password)
+        self._notification_service.notify_password_changed(user.id)  # NEW
     
     

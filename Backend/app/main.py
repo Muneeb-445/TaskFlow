@@ -2,18 +2,26 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
-
-from app.api.v1.routers import auth, users, categories,tasks,dashboard
+from app.api.v1.routers import auth, users, categories,tasks,dashboard,notifications
+from contextlib import asynccontextmanager
+from app.core.scheduler import start_scheduler, stop_scheduler
 from app.core.config import settings
 from app.core.exceptions import ConflictError, ValidationError, ForbiddenError, InvalidCredentialsError, NotFoundError
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    stop_scheduler()
 
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.project_name,
         openapi_url=f"{settings.api_v1_prefix}/openapi.json",
+        lifespan=lifespan,
     )
-    
+
     app.mount("/static/avatars", StaticFiles(directory=settings.UPLOAD_DIR), name="avatars")
 
     if settings.backend_cors_origins:
@@ -50,6 +58,7 @@ def create_app() -> FastAPI:
     app.include_router(categories.router, prefix=settings.api_v1_prefix)
     app.include_router(tasks.router, prefix=settings.api_v1_prefix)
     app.include_router(dashboard.router, prefix=settings.api_v1_prefix)
+    app.include_router(notifications.router, prefix=settings.api_v1_prefix)
 
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:

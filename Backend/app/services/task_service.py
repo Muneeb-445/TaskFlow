@@ -7,6 +7,7 @@ from app.models.category import Category
 from app.models.task import Task, TaskStatus
 from app.repositories.task_repository import TaskRepository
 from app.schemas.task import TaskCreate, TaskListResponse, TaskResponse, TaskUpdate
+from app.services.notification_service import NotificationService
 
 
 def build_task_response(task: Task, category_name: str | None) -> TaskResponse:
@@ -40,6 +41,7 @@ class TaskService:
     def __init__(self, db: Session) -> None:
         self._db = db
         self._repository = TaskRepository(db)
+        self._notification_service = NotificationService(db)  # NEW
 
     def _get_owned_task(self, task_id: int, user_id: int) -> Task:
         task = self._repository.get_owned(task_id, user_id)
@@ -126,20 +128,28 @@ class TaskService:
         if "category_id" in provided_fields and provided_fields["category_id"] is not None:
             self._validate_category_ownership(provided_fields["category_id"], user_id)
 
-        # CHANGED: the due_date conversion block is deleted; the date passes straight through
+        due_date_changed = "due_date" in provided_fields  # NEW
 
         task = self._repository.update(task, **provided_fields)
+
+        if due_date_changed:  # NEW
+            self._notification_service.clear_due_date_notifications(task.id)  # NEW
+
+        return build_task_response(task, self._category_name(task))
         return build_task_response(task, self._category_name(task))
 
     def delete_task(self, task_id: int, user_id: int) -> None:
         task = self._get_owned_task(task_id, user_id)
+        task_title = task.title  # capture before deletion
         self._repository.delete(task)
+        self._notification_service.notify_task_deleted(user_id, task_title)  # NEW
 
     def start_task(self, task_id: int, user_id: int) -> TaskResponse:
         task = self._get_owned_task(task_id, user_id)
         if task.status == TaskStatus.TODO:
             task.status = TaskStatus.IN_PROGRESS
             task = self._repository.save(task)
+            self._notification_service.notify_task_started(user_id, task.id, task.title)  # NEW
         return build_task_response(task, self._category_name(task))
 
     def complete_task(self, task_id: int, user_id: int) -> TaskResponse:
@@ -148,6 +158,7 @@ class TaskService:
             task.status = TaskStatus.COMPLETED
             task.completed_at = datetime.now(timezone.utc)
             task = self._repository.save(task)
+            self._notification_service.notify_task_completed(user_id, task.id, task.title)  # NEW
         return build_task_response(task, self._category_name(task))
 
     def reopen_task(self, task_id: int, user_id: int) -> TaskResponse:
