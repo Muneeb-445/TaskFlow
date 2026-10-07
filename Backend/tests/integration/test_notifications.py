@@ -530,3 +530,7 @@ class TestSchedulerCrossUserIsolation:
 
         assert _notification_types(body_a) == ["TASK_OVERDUE"]
         assert _notification_types(body_b) == ["TASK_DUE_TODAY"]
+
+
+# to test case use this command from backend 
+# pytest tests/integration/test_notifications.py -v
