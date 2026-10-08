@@ -199,3 +199,29 @@
     right: -8px;
   }
 }
+
+.notification-delete-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-delete-button:hover {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.notification-delete-button:active {
+  color: #dc2626;
+  background: #fee2e2;
+  transform: scale(0.94);
+}

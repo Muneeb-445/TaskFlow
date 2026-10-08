@@ -28,8 +28,12 @@ function checkPassword(password) {
     special: /[^A-Za-z0-9]/.test(password),
   };
 }
-
-export default function Profile({ user, onSave, showToast }) {
+export default function Profile({
+  user,
+  onSave,
+  showToast,
+  onPasswordChanged,
+}) {
   const fileInputRef = useRef(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarRemoving, setAvatarRemoving] = useState(false);
@@ -152,6 +156,12 @@ export default function Profile({ user, onSave, showToast }) {
         new_password: newPass,
       });
 
+      try {
+        await onPasswordChanged?.();
+      } catch {
+        // Password was changed successfully.
+      }
+
       setPassSaved(true);
       setCurPass("");
       setNewPass("");
@@ -176,9 +186,8 @@ export default function Profile({ user, onSave, showToast }) {
 
       {/* Profile card */}
       <div
-        className={`profile-card ${
-          avatarPreviewOpen ? "profile-card-preview-active" : ""
-        }`}
+        className={`profile-card ${avatarPreviewOpen ? "profile-card-preview-active" : ""
+          }`}
       >
         {/* Avatar */}
         <div className="profile-avatar-section">
@@ -364,9 +373,8 @@ export default function Profile({ user, onSave, showToast }) {
                 ].map(({ ok, label }) => (
                   <span
                     key={label}
-                    className={`password-check ${
-                      ok ? "password-check-valid" : ""
-                    }`}
+                    className={`password-check ${ok ? "password-check-valid" : ""
+                      }`}
                   >
                     <CheckCircle size={11} />
                     {label}

@@ -9,7 +9,8 @@ import {
 
 export default function useCategories(
   initialCategories = [],
-  showToast
+  showToast,
+  onCategoryChanged
 ) {
   const [categories, setCategories] = useState(initialCategories);
 
@@ -61,9 +62,9 @@ export default function useCategories(
         currentCategories.map((category) =>
           category.id === id
             ? {
-                ...updatedCategory,
-                color,
-              }
+              ...updatedCategory,
+              color,
+            }
             : category
         )
       );
@@ -87,6 +88,12 @@ export default function useCategories(
           (category) => category.id !== id
         )
       );
+
+      try {
+        await onCategoryChanged?.();
+      } catch {
+        // Category was deleted successfully.
+      }
 
       showToast("Category deleted.", "info");
     } catch (error) {

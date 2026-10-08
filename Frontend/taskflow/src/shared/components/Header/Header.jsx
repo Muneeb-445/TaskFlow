@@ -13,7 +13,6 @@ import {
 import NotificationPanel from "../NotificationPanel/NotificationPanel";
 import "./Header.css";
 
-const NOTIF_COUNT = 2;
 
 export default function Header({
   user,
@@ -22,6 +21,14 @@ export default function Header({
   onCreateTask,
   searchQuery,
   onSearch,
+  notifications,
+  unreadCount,
+  notificationsLoading,
+  notificationsError,
+  onLoadNotifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  onDeleteNotification,
 }) {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -33,10 +40,19 @@ export default function Header({
     .toUpperCase()
     .slice(0, 2);
 
-  const handleNotificationToggle = () => {
-    setNotifOpen((open) => !open);
-    setAvatarOpen(false);
-  };
+ const handleNotificationToggle = () => {
+  setNotifOpen((open) => {
+    const nextOpen = !open;
+
+    if (nextOpen) {
+      onLoadNotifications(1);
+    }
+
+    return nextOpen;
+  });
+
+  setAvatarOpen(false);
+};
 
   const handleAvatarToggle = () => {
     setAvatarOpen((open) => !open);
@@ -90,11 +106,21 @@ export default function Header({
           >
             <Bell size={18} />
 
-            {NOTIF_COUNT > 0 && <span className="notification-dot" />}
+            {unreadCount > 0 && <span className="notification-dot" />}
           </button>
 
           {notifOpen && (
-            <NotificationPanel onClose={() => setNotifOpen(false)} />
+            <NotificationPanel
+              notifications={notifications}
+              unreadCount={unreadCount}
+              loading={notificationsLoading}
+              error={notificationsError}
+              onLoadNotifications={onLoadNotifications}
+              onMarkNotificationRead={onMarkNotificationRead}
+              onMarkAllNotificationsRead={onMarkAllNotificationsRead}
+              onDeleteNotification={onDeleteNotification}
+              onClose={() => setNotifOpen(false)}
+            />
           )}
         </div>
 

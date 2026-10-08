@@ -103,6 +103,7 @@ export default function AppRoutes({
   onDeleteCategory,
   showToast,
   onSaveUser,
+  onPasswordChanged,
 }) {
   const navigate = useNavigate();
 
@@ -225,7 +226,7 @@ export default function AppRoutes({
         <Route
           path="/profile"
           element={
-            <Profile user={user} onSave={onSaveUser} showToast={showToast} />
+            <Profile user={user} onSave={onSaveUser} showToast={showToast} onPasswordChanged={onPasswordChanged} />
           }
         />
 

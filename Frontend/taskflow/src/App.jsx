@@ -15,9 +15,8 @@ import Header from "./shared/components/Header/Header";
 import ErrorBoundary from "./shared/components/ErrorBoundry/errorBoundary";
 
 import useAuth from "./features/auth/hooks/useAuth";
-
 import useTasks from "./features/tasks/hooks/useTasks";
-
+import useNotifications from "./features/notifications/hooks/useNotifications";
 import "./App.css";
 
 import { getCurrentUser } from "./features/user/api/users";
@@ -44,13 +43,37 @@ export default function App() {
   const { toasts, showToast, removeToast } = useToast();
 
   const {
+    notifications,
+    unreadCount,
+    loading: notificationsLoading,
+    error: notificationsError,
+    loadNotifications,
+    handleMarkAsRead,
+    handleMarkAllAsRead,
+    handleDelete,
+  } = useNotifications();
+
+  const handlePasswordChanged = async () => {
+  await loadNotifications(1);
+};
+
+  const handleCategoryChanged = async () => {
+    await loadNotifications(1);
+  };
+
+  const {
     categories,
     setCategories,
     loadCategories,
     handleCreateCategory,
     handleEditCategory,
     handleDeleteCategory,
-  } = useCategories([], showToast);
+  } = useCategories([], showToast, handleCategoryChanged);
+
+  const handleTaskChanged = async () => {
+    await loadCategories();
+    await loadNotifications(1);
+  };
 
   const {
     tasks,
@@ -61,7 +84,7 @@ export default function App() {
     handleStartTask,
     handleCompleteTask,
     handleReopenTask,
-  } = useTasks(showToast, loadCategories);
+  } = useTasks(showToast, handleTaskChanged);;
 
   const { isLoggedIn, authLoading, setAuthLoading, completeLogin, logout } =
     useAuth();
@@ -85,6 +108,7 @@ export default function App() {
         setCategories(userCategories);
 
         await loadTasks();
+        await loadNotifications();
 
         completeLogin();
       } catch {
@@ -108,6 +132,7 @@ export default function App() {
       setCategories(userCategories);
 
       await loadTasks();
+      await loadNotifications();
 
       completeLogin();
       navigate("/dashboard");
@@ -170,29 +195,29 @@ export default function App() {
     navigate(`/tasks/${id}/edit`);
   };
 
- const handleSaveTask = async (data) => {
-  const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
+  const handleSaveTask = async (data) => {
+    const editMatch = location.pathname.match(/^\/tasks\/(\d+)\/edit$/);
 
-  if (editMatch) {
-    const taskId = Number(editMatch[1]);
+    if (editMatch) {
+      const taskId = Number(editMatch[1]);
+
+      try {
+        await handleUpdateTask(taskId, data);
+        navigate(`/tasks/${taskId}`);
+      } catch {
+        // Error toast is already handled by useTasks.
+      }
+
+      return;
+    }
 
     try {
-      await handleUpdateTask(taskId, data);
-      navigate(`/tasks/${taskId}`);
+      await createTask(data);
+      navigate("/tasks");
     } catch {
       // Error toast is already handled by useTasks.
     }
-
-    return;
-  }
-
-  try {
-    await createTask(data);
-    navigate("/tasks");
-  } catch {
-    // Error toast is already handled by useTasks.
-  }
-};
+  };
 
   if (authLoading) {
     return null;
@@ -226,6 +251,14 @@ export default function App() {
               navigate("/tasks");
             }
           }}
+          notifications={notifications}
+          unreadCount={unreadCount}
+          notificationsLoading={notificationsLoading}
+          notificationsError={notificationsError}
+          onLoadNotifications={loadNotifications}
+          onMarkNotificationRead={handleMarkAsRead}
+          onMarkAllNotificationsRead={handleMarkAllAsRead}
+          onDeleteNotification={handleDelete}
         />
 
         <main className="app-main">
@@ -260,6 +293,7 @@ export default function App() {
               onDeleteCategory={handleDeleteCategory}
               showToast={showToast}
               onSaveUser={setUser}
+              onPasswordChanged={handlePasswordChanged}
             />
           </ErrorBoundary>
         </main>

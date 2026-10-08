@@ -1,86 +1,170 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect } from "react";
 import {
   X,
   CheckCircle2,
   AlertCircle,
   Clock,
   Zap,
-} from 'lucide-react'
+  Play,
+  Trash2,
+  Tag,
+  LockKeyhole,
+} from "lucide-react";
 
-import './NotificationPanel.css'
-
-const SAMPLE = [
-  {
-    id: 'n1',
-    type: 'completed',
-    read: false,
-    title: 'Task completed',
-    body: '"Morning run — 5km" was marked as done.',
-    time: '2 min ago',
-  },
-  {
-    id: 'n2',
-    type: 'overdue',
-    read: false,
-    title: 'Task overdue',
-    body: '"Fix auth bug in API gateway" is 2 days overdue.',
-    time: '1 hr ago',
-  },
-  {
-    id: 'n3',
-    type: 'upcoming',
-    read: true,
-    title: 'Due tomorrow',
-    body: '"Write Q3 performance review" is due Sep 4.',
-    time: '3 hr ago',
-  },
-  {
-    id: 'n4',
-    type: 'system',
-    read: true,
-    title: 'Weekly summary ready',
-    body: 'You completed 28 tasks this week. Great work! 🎉',
-    time: 'Yesterday',
-  },
-]
+import "./NotificationPanel.css";
 
 function iconFor(type) {
-  if (type === 'completed') {
-    return <CheckCircle2 size={15} className="notification-icon-completed" />
-  }
+  switch (type) {
+    case "TASK_COMPLETED":
+      return (
+        <CheckCircle2
+          size={15}
+          className="notification-icon-completed"
+        />
+      );
 
-  if (type === 'overdue') {
-    return <AlertCircle size={15} className="notification-icon-overdue" />
-  }
+    case "TASK_STARTED":
+      return (
+        <Play
+          size={15}
+          className="notification-icon-upcoming"
+        />
+      );
 
-  if (type === 'upcoming') {
-    return <Clock size={15} className="notification-icon-upcoming" />
-  }
+    case "TASK_DELETED":
+      return (
+        <Trash2
+          size={15}
+          className="notification-icon-overdue"
+        />
+      );
 
-  return <Zap size={15} className="notification-icon-system" />
+    case "TASK_DUE_TODAY":
+      return (
+        <Clock
+          size={15}
+          className="notification-icon-upcoming"
+        />
+      );
+
+    case "TASK_DUE_TOMORROW":
+      return (
+        <Clock
+          size={15}
+          className="notification-icon-upcoming"
+        />
+      );
+
+    case "TASK_OVERDUE":
+      return (
+        <AlertCircle
+          size={15}
+          className="notification-icon-overdue"
+        />
+      );
+
+    case "CATEGORY_DELETED":
+      return (
+        <Tag
+          size={15}
+          className="notification-icon-system"
+        />
+      );
+
+    case "PASSWORD_CHANGED":
+      return (
+        <LockKeyhole
+          size={15}
+          className="notification-icon-system"
+        />
+      );
+
+    default:
+      return (
+        <Zap
+          size={15}
+          className="notification-icon-system"
+        />
+      );
+  }
 }
 
-export default function NotificationPanel({ onClose }) {
-  const ref = useRef(null)
+function formatNotificationTime(createdAt) {
+  if (!createdAt) {
+    return "";
+  }
+
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleString();
+}
+
+export default function NotificationPanel({
+  notifications = [],
+  unreadCount = 0,
+  loading = false,
+  error = "",
+  onLoadNotifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  onDeleteNotification,
+  onClose,
+}) {
+  const ref = useRef(null);
 
   useEffect(() => {
     const handler = (event) => {
       if (ref.current && !ref.current.contains(event.target)) {
-        onClose()
+        onClose();
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handler)
+    document.addEventListener("mousedown", handler);
 
     return () => {
-      document.removeEventListener('mousedown', handler)
-    }
-  }, [onClose])
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [onClose]);
 
-  const unread = SAMPLE.filter((notification) => !notification.read).length
+  const handleNotificationClick = async (notification) => {
+    if (notification.is_read) {
+      return;
+    }
+
+    try {
+      await onMarkNotificationRead(notification.id);
+    } catch {
+      // Error is handled by the API/hook layer.
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      await onMarkAllNotificationsRead();
+    } catch {
+      // Error is handled by the API/hook layer.
+    }
+  };
+
+  const handleDelete = async (event, notificationId) => {
+    event.stopPropagation();
+
+    try {
+      await onDeleteNotification(notificationId);
+    } catch {
+      // Error is handled by the API/hook layer.
+    }
+  };
 
   return (
-    <div ref={ref} className="notification-panel fade-in">
+    <div
+      ref={ref}
+      className="notification-panel fade-in"
+    >
       {/* Header */}
       <div className="notification-panel-header">
         <div className="notification-panel-title-group">
@@ -88,9 +172,9 @@ export default function NotificationPanel({ onClose }) {
             Notifications
           </span>
 
-          {unread > 0 && (
+          {unreadCount > 0 && (
             <span className="notification-count">
-              {unread}
+              {unreadCount}
             </span>
           )}
         </div>
@@ -105,55 +189,120 @@ export default function NotificationPanel({ onClose }) {
         </button>
       </div>
 
-      {/* List */}
-      <div className="notification-list">
-        {SAMPLE.map((notification) => (
-          <div
-            key={notification.id}
-            className={`notification-item ${
-              !notification.read ? 'notification-item-unread' : ''
-            }`}
+      {/* Loading */}
+      {loading && (
+        <div className="notification-state">
+          Loading notifications...
+        </div>
+      )}
+
+      {/* Error */}
+      {!loading && error && (
+        <div className="notification-state notification-state-error">
+          <p>{error}</p>
+
+          <button
+            type="button"
+            onClick={() => onLoadNotifications(1)}
           >
-            <div
-              className={`notification-type-icon ${
-                !notification.read
-                  ? 'notification-type-icon-unread'
-                  : 'notification-type-icon-read'
-              }`}
-            >
-              {iconFor(notification.type)}
-            </div>
+            Try again
+          </button>
+        </div>
+      )}
 
-            <div className="notification-content">
-              <p className="notification-item-title">
-                {notification.title}
-              </p>
+      {/* Empty */}
+      {!loading &&
+        !error &&
+        notifications.length === 0 && (
+          <div className="notification-state">
+            <Zap size={20} />
 
-              <p className="notification-item-body">
-                {notification.body}
-              </p>
-
-              <p className="notification-item-time">
-                {notification.time}
-              </p>
-            </div>
-
-            {!notification.read && (
-              <span className="notification-unread-dot" />
-            )}
+            <p>No notifications yet.</p>
           </div>
-        ))}
-      </div>
+        )}
+
+      {/* Notification list */}
+      {!loading &&
+        !error &&
+        notifications.length > 0 && (
+          <div className="notification-list">
+            {notifications.map((notification) => (
+              <div
+                key={notification.id}
+                onClick={() =>
+                  handleNotificationClick(notification)
+                }
+                className={`notification-item ${
+                  !notification.is_read
+                    ? "notification-item-unread"
+                    : ""
+                }`}
+              >
+                <div
+                  className={`notification-type-icon ${
+                    !notification.is_read
+                      ? "notification-type-icon-unread"
+                      : "notification-type-icon-read"
+                  }`}
+                >
+                  {iconFor(
+                    notification.notification_type
+                  )}
+                </div>
+
+                <div className="notification-content">
+                  <p className="notification-item-title">
+                    {notification.title}
+                  </p>
+
+                  <p className="notification-item-body">
+                    {notification.message}
+                  </p>
+
+                  <p className="notification-item-time">
+                    {formatNotificationTime(
+                      notification.created_at
+                    )}
+                  </p>
+                </div>
+
+                {!notification.is_read && (
+                  <span className="notification-unread-dot" />
+                )}
+
+                <button
+                  type="button"
+                  className="notification-delete-button"
+                  onClick={(event) =>
+                    handleDelete(
+                      event,
+                      notification.id
+                    )
+                  }
+                  aria-label="Delete notification"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
       {/* Footer */}
-      <div className="notification-panel-footer">
-        <button
-          type="button"
-          className="notification-mark-read-button"
-        >
-          Mark all as read
-        </button>
-      </div>
+      {!loading &&
+        !error &&
+        notifications.length > 0 && (
+          <div className="notification-panel-footer">
+            <button
+              type="button"
+              className="notification-mark-read-button"
+              onClick={handleMarkAllAsRead}
+              disabled={unreadCount === 0}
+            >
+              Mark all as read
+            </button>
+          </div>
+        )}
     </div>
-  )
+  );
 }
