@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USERNAME: str
-    SMTP_PASSWORD: str
-    SMTP_FROM_EMAIL: str
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
     SMTP_FROM_NAME: str = "TaskFlow"
     FRONTEND_RESET_PASSWORD_URL: str = "http://localhost:5173/reset-password"
     RESET_TOKEN_EXPIRE_MINUTES: int = 10
