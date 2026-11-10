@@ -11,9 +11,14 @@ from app.core.exceptions import ConflictError, ValidationError, ForbiddenError, 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    start_scheduler()
-    yield
-    stop_scheduler()
+    if settings.RUN_SCHEDULER:
+        start_scheduler()
+
+    try:
+        yield
+    finally:
+        if settings.RUN_SCHEDULER:
+            stop_scheduler()
 
 def create_app() -> FastAPI:
     app = FastAPI(

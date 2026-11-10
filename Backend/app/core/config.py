@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     FRONTEND_RESET_PASSWORD_URL: str = "http://localhost:5173/reset-password"
     RESET_TOKEN_EXPIRE_MINUTES: int = 10
     
+    RUN_SCHEDULER: bool = True
     project_name: str = "TaskFlow"                    
     api_v1_prefix: str = "/api/v1"                     
     backend_cors_origins: list[str] = [
